@@ -7,7 +7,7 @@ rescue LoadError
 end
 
 begin
-  require 'active_hash/base'
+  require 'active_hash'
   require 'associations/associations'
 rescue LoadError
 end
