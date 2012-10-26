@@ -1,7 +1,5 @@
 require 'active_hash'
 
-
-
 begin
   klass = Module.const_get(ActiveRecord::Rollback)
   unless klass.is_a?(Class)
@@ -47,30 +45,21 @@ module ActiveHash
     end
 
     def save(*args)
-      record = self.class.find(self.id) if self.class.exists?(self.id)
+      record = self.class.find_by_id(self.id)
 
-      self.class.insert(self) unless record == self && record.to_s != self.to_s
+      self.class.insert(self) if record.nil? && record != self
       true
     end
 
     def persisted?
-      other = self.class.find(id)
-      self.class.all.map(&:id).include?(id) && created_at == other.created_at
+      other = self.class.find_by_id(id)
+      other.present? && other.created_at
     end
 
     def eql?(other)
-      other.instance_of?(self.class) and not id.nil? and (id == other.id) and (created_at == other.created_at)
+      (other.instance_of?(self.class) || other.instance_of?(self.class.get_model_class)) && id.present? && (id == other.id) && (created_at == other.created_at)
     end
 
     alias == eql?
-
-    def self.exists?(id)
-      begin
-        find(id)
-        true
-      rescue RecordNotFound
-        false
-      end
-    end
   end
 end

@@ -18,13 +18,95 @@ module ActiveRepository
 
     fields :created_at, :updated_at
 
+    def self.define_custom_find_by_field(field_name)
+      method_name = :"find_by_#{field_name}"
+      unless has_singleton_method?(method_name)
+        the_meta_class.instance_eval do
+          define_method(method_name) do |*args|
+            object = get_model_class.send(method_name)
+            object.nil? ? nil : serialize!(object.attributes)
+          end
+        end
+      end
+    end
+
+    def self.define_custom_find_by_field(field_name)
+      method_name = :"find_by_#{field_name}"
+      the_meta_class.instance_eval do
+        define_method(method_name) do |*args|
+          object = nil
+
+          if self == get_model_class
+            object = self.where(field_name.to_sym => args.first).first
+          else
+            object = get_model_class.send(method_name, args)
+          end
+
+          object.nil? ? nil : serialize!(object.attributes)
+        end
+      end
+    end
+
+    def self.define_custom_find_all_by_field(field_name)
+      method_name = :"find_all_by_#{field_name}"
+      the_meta_class.instance_eval do
+        define_method(method_name) do |*args|
+          objects = []
+
+          if self == get_model_class
+            objects = self.where(field_name.to_sym => args.first)
+          else
+            objects = get_model_class.send(method_name, args)
+          end
+
+          objects.empty? ? [] : objects.map{ |object| serialize!(object.attributes) }
+        end
+      end
+    end
+
     def self.find(id)
+      begin
+        if self == get_model_class
+          super(id)
+        else
+          object = get_model_class.find(id)
+
+          if object.is_a?(Array)
+            object.map { |o| serialize!(o.attributes) }
+          else
+            serialize!(object.attributes)
+          end
+        end
+      rescue Exception => e
+        message = ""
+
+        if id.is_a?(Array)
+          message = "Couldn't find all #{self} objects with IDs (#{id.join(', ')})"
+        else
+          message = "Couldn't find #{self} with ID=#{id}"
+        end
+
+        raise ActiveHash::RecordNotFound.new(message)
+      end
+    end
+
+    def reload
+      serialize! self.class.get_model_class.find(self.id).attributes
+    end
+
+    def self.exists?(id)
+      if self == get_model_class
+        !find_by_id(id).nil?
+      else
+        get_model_class.exists?(id)
+      end
+    end
+
+    def self.find_by_id(id)
       if self == get_model_class
         super(id)
       else
-        object = get_model_class.find(id)
-
-        serialize!(object.attributes)
+        get_model_class.find_by_id(id)
       end
     end
 
@@ -38,6 +120,8 @@ module ActiveRepository
 
     def self.create(attributes={})
       object = get_model_class.new(attributes)
+
+      object.id = nil if get_model_class.exists?(object.id)
 
       object.save
 
@@ -61,7 +145,7 @@ module ActiveRepository
     end
 
     def self.delete_all
-      self == get_model_class ? super : get_model_class.all.each(&:delete)
+      self == get_model_class ? super : get_model_class.delete_all
     end
 
     def self.where(query)
@@ -79,6 +163,11 @@ module ActiveRepository
 
     def self.set_model_class(value)
       self.model_class = value if model_class.nil?
+
+      field_names.each do |field_name|
+        define_custom_find_by_field(field_name)
+        define_custom_find_all_by_field(field_name)
+      end
     end
 
     def self.set_save_in_memory(value)
@@ -92,22 +181,20 @@ module ActiveRepository
     end
 
     def self.first
-      if self == get_model_class
-        id = get_model_class.all.map(&:id).sort.first
-
-        self.find_by_id id
-      else
-        get_model_class.first
-      end
+      get("first")
     end
 
     def self.last
+      get("last")
+    end
+
+    def self.get(position)
       if self == get_model_class
-        id = get_model_class.all.map(&:id).sort.last
+        id = get_model_class.all.map(&:id).sort.send(position)
 
         self.find id
       else
-        get_model_class.last
+        serialize! get_model_class.send(position).attributes
       end
     end
 
