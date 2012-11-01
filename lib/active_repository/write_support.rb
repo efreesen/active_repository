@@ -1,4 +1,5 @@
 require 'active_hash'
+require 'active_repository/sql_query_executor'
 
 begin
   klass = Module.const_get(ActiveRecord::Rollback)
@@ -32,6 +33,16 @@ module ActiveHash
         if record.valid?
           add_to_record_index({ record.id.to_s => @records.length })
           @records << record
+        end
+      end
+    end
+
+    def self.where(query)
+      if query.is_a?(String)
+        return ActiveHash::SQLQueryExecutor.execute(self, query)
+      else
+        (@records || []).select do |record|
+          query.all? { |col, match| record[col] == match }
         end
       end
     end

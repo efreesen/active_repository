@@ -1,4 +1,6 @@
 require 'spec_helper'
+require 'support/shared_examples'
+
 require 'active_repository'
 require "active_record"
 require "mongoid"

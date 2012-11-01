@@ -45,7 +45,7 @@ shared_examples ".where" do
   end
 
   it "returns all data as inflated objects" do
-    Country.where(:language => 'English').all? { |country| country.should be_kind_of(Country) }
+    Country.where(:language => 'English', :name => 'US').all? { |country| country.should be_kind_of(Country) }
   end
 
   it "populates the data correctly" do

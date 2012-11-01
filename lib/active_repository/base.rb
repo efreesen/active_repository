@@ -1,6 +1,7 @@
 require 'active_repository/associations'
 require 'active_repository/uniqueness'
 require 'active_repository/write_support'
+require 'active_repository/sql_query_executor'
 
 module ActiveRepository
 
@@ -148,12 +149,14 @@ module ActiveRepository
       self == get_model_class ? super : get_model_class.delete_all
     end
 
-    def self.where(query)
+    def self.where(*args)
+      raise ArgumentError.new("wrong number of arguments (0 for 1)") if args.empty?
       if self == get_model_class
-        super
+        query = ActiveHash::SQLQueryExecutor.args_to_query(args)
+        super(query)
       else
         objects = []
-        get_model_class.where(query).each do |object|
+        get_model_class.where(args.first).each do |object|
           objects << self.serialize!(object.attributes)
         end
 
