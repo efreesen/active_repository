@@ -31,6 +31,12 @@ describe ActiveRepository, "Base" do
 
     describe ".where" do
       it_behaves_like '='
+      it_behaves_like '>'
+      it_behaves_like '>='
+      it_behaves_like '<'
+      it_behaves_like '<='
+      it_behaves_like 'between'
+      it_behaves_like 'is'
     end
   end
 
@@ -67,6 +73,12 @@ describe ActiveRepository, "Base" do
 
     describe ".where" do
       it_behaves_like '='
+      it_behaves_like '>'
+      it_behaves_like '>='
+      it_behaves_like '<'
+      it_behaves_like '<='
+      it_behaves_like 'between'
+      it_behaves_like 'is'
     end
   end
 end

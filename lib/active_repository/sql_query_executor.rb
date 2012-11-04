@@ -16,6 +16,86 @@ module ActiveHash
           sub_query = query.gsub(sub_query.join(" "), "")
 
           operator.nil? ? objects : objects.send(operator, execute(klass, sub_query)).sort_by{ |o| o.id }
+        when ">"
+          query = sanitize_query(query)
+
+          array = query.split(" ")
+          sub_query = array[0..3]
+
+          operator = get_operator(sub_query)
+
+          objects = klass.all.select{ |o| (o.send(sub_query.first).is_a?(Integer) ? (o.send(sub_query.first) > sub_query[2].gsub("_", " ").to_i) : (o.send(sub_query.first).to_s) > sub_query[2].gsub("_", " ")) }
+
+          sub_query = query.gsub(sub_query.join(" "), "")
+
+          operator.nil? ? objects : objects.send(operator, execute(klass, sub_query)).sort_by{ |o| o.id }
+        when ">="
+          query = sanitize_query(query)
+
+          array = query.split(" ")
+          sub_query = array[0..3]
+
+          operator = get_operator(sub_query)
+
+          objects = klass.all.select{ |o| (o.send(sub_query.first).is_a?(Integer) ? (o.send(sub_query.first) >= sub_query[2].gsub("_", " ").to_i) : (o.send(sub_query.first).to_s) >= sub_query[2].gsub("_", " ")) }
+
+          sub_query = query.gsub(sub_query.join(" "), "")
+
+          operator.nil? ? objects : objects.send(operator, execute(klass, sub_query)).sort_by{ |o| o.id }
+        when "<"
+          query = sanitize_query(query)
+
+          array = query.split(" ")
+          sub_query = array[0..3]
+
+          operator = get_operator(sub_query)
+
+          objects = klass.all.select{ |o| o.send(sub_query.first).nil? ? false : ((o.send(sub_query.first).is_a?(Integer) ? (o.send(sub_query.first) < sub_query[2].gsub("_", " ").to_i) : (o.send(sub_query.first).to_s) < sub_query[2].gsub("_", " "))) }
+
+          sub_query = query.gsub(sub_query.join(" "), "")
+
+          operator.nil? ? objects : objects.send(operator, execute(klass, sub_query)).sort_by{ |o| o.id }
+        when "<="
+          query = sanitize_query(query)
+
+          array = query.split(" ")
+          sub_query = array[0..3]
+
+          operator = get_operator(sub_query)
+
+          objects = klass.all.select{ |o| o.send(sub_query.first).nil? ? false : ((o.send(sub_query.first).is_a?(Integer) ? (o.send(sub_query.first) <= sub_query[2].gsub("_", " ").to_i) : (o.send(sub_query.first).to_s) <= sub_query[2].gsub("_", " "))) }
+
+          sub_query = query.gsub(sub_query.join(" "), "")
+
+          operator.nil? ? objects : objects.send(operator, execute(klass, sub_query)).sort_by{ |o| o.id }
+        when "between"
+          query = sanitize_query(query)
+
+          array = query.split(" ")
+          sub_query = array[0..5]
+
+          operator = get_operator(sub_query)
+
+          objects = klass.all.select{ |o| (o.send(sub_query.first).is_a?(Integer) ? (o.send(sub_query.first) >= sub_query[2].gsub("_", " ").to_i && o.send(sub_query.first) <= sub_query[4].gsub("_", " ").to_i) : (o.send(sub_query.first).to_s) >= sub_query[2].gsub("_", " ") && o.send(sub_query.first) <= sub_query[4].gsub("_", " ")) }
+
+          sub_query = query.gsub(sub_query.join(" "), "")
+
+          operator.nil? ? objects : objects.send(operator, execute(klass, sub_query)).sort_by{ |o| o.id }
+        when "is"
+          query = sanitize_query(query)
+
+          array = query.split(" ")
+          size = array[2].downcase == "not" ? 4 : 3
+
+          sub_query = array[0..size]
+
+          operator = get_operator(sub_query)
+
+          objects = klass.all.select{ |o| size == 3 ? o.send(sub_query.first).blank? : !o.send(sub_query.first).blank? }
+
+          sub_query = query.gsub(sub_query.join(" "), "")
+
+          operator.nil? ? objects : objects.send(operator, execute(klass, sub_query)).sort_by{ |o| o.id }
         else
           []
         end
@@ -45,7 +125,7 @@ module ActiveHash
 
       private
       def get_operator(attributes)
-        operator = attributes.size == 4 ? attributes.last : nil
+        operator = attributes.size >= 4 ? attributes.last : nil
 
         case operator
         when "or"
@@ -62,7 +142,7 @@ module ActiveHash
         params = query.scan(/([\"'])(.*?)\1/)
 
         params.each do |quote, param|
-          new_query = query.gsub(quote,"").gsub(param, param.gsub(" ", "_"))
+          new_query = new_query.gsub(quote,"").gsub(param, param.gsub(" ", "_"))
         end
 
         new_query

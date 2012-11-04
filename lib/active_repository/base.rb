@@ -156,7 +156,8 @@ module ActiveRepository
         super(query)
       else
         objects = []
-        get_model_class.where(args.first).each do |object|
+        args = args.first.is_a?(Hash) ? args.first : args
+        get_model_class.where(args).each do |object|
           objects << self.serialize!(object.attributes)
         end
 
