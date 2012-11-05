@@ -2,103 +2,40 @@ module ActiveHash
   class SQLQueryExecutor
     class << self
       def execute(klass, query)
-        case query.split(" ")[1]
-        when "="
+        @operator, @sub_query, @objects = process_first(klass, query, query.split(" ")[1])
+
+        @operator.nil? ? @objects : @objects.send(@operator, execute(klass, @sub_query)).sort_by{ |o| o.id }
+      end
+
+      def process_first(klass, query, operator)
           query = sanitize_query(query)
 
           array = query.split(" ")
-          sub_query = array[0..3]
+          sub_query = case operator
+            when "between"
+              array[0..5]
+            when "is"
+              size = array[2].downcase == "not" ? 4 : 3
+              array[0..size]
+            else
+              operator = "==" if operator == "="
+              array[0..3]
+            end
 
-          operator = get_operator(sub_query)
+          binding_operator = get_operator(sub_query)
 
-          objects = klass.all.select{ |o| o.send(sub_query.first).to_s == sub_query[2].gsub("_", " ") }
-
-          sub_query = query.gsub(sub_query.join(" "), "")
-
-          operator.nil? ? objects : objects.send(operator, execute(klass, sub_query)).sort_by{ |o| o.id }
-        when ">"
-          query = sanitize_query(query)
-
-          array = query.split(" ")
-          sub_query = array[0..3]
-
-          operator = get_operator(sub_query)
-
-          objects = klass.all.select{ |o| (o.send(sub_query.first).is_a?(Integer) ? (o.send(sub_query.first) > sub_query[2].gsub("_", " ").to_i) : (o.send(sub_query.first).to_s) > sub_query[2].gsub("_", " ")) }
-
-          sub_query = query.gsub(sub_query.join(" "), "")
-
-          operator.nil? ? objects : objects.send(operator, execute(klass, sub_query)).sort_by{ |o| o.id }
-        when ">="
-          query = sanitize_query(query)
-
-          array = query.split(" ")
-          sub_query = array[0..3]
-
-          operator = get_operator(sub_query)
-
-          objects = klass.all.select{ |o| (o.send(sub_query.first).is_a?(Integer) ? (o.send(sub_query.first) >= sub_query[2].gsub("_", " ").to_i) : (o.send(sub_query.first).to_s) >= sub_query[2].gsub("_", " ")) }
+          objects = case operator
+            when "between"
+              klass.all.select{ |o| (o.send(sub_query.first).is_a?(Integer) ? (o.send(sub_query.first) >= sub_query[2].gsub("_", " ").to_i && o.send(sub_query.first) <= sub_query[4].gsub("_", " ").to_i) : (o.send(sub_query.first).to_s) >= sub_query[2].gsub("_", " ") && o.send(sub_query.first) <= sub_query[4].gsub("_", " ")) }
+            when "is"
+              klass.all.select{ |o| sub_query.size == 3 ? o.send(sub_query.first).blank? : !o.send(sub_query.first).blank? }
+            else
+              klass.all.select{ |o| o.send(sub_query.first).nil? ? false : o.send(sub_query.first).to_s.send(operator, sub_query[2].gsub("_", " ")) }
+            end
 
           sub_query = query.gsub(sub_query.join(" "), "")
 
-          operator.nil? ? objects : objects.send(operator, execute(klass, sub_query)).sort_by{ |o| o.id }
-        when "<"
-          query = sanitize_query(query)
-
-          array = query.split(" ")
-          sub_query = array[0..3]
-
-          operator = get_operator(sub_query)
-
-          objects = klass.all.select{ |o| o.send(sub_query.first).nil? ? false : ((o.send(sub_query.first).is_a?(Integer) ? (o.send(sub_query.first) < sub_query[2].gsub("_", " ").to_i) : (o.send(sub_query.first).to_s) < sub_query[2].gsub("_", " "))) }
-
-          sub_query = query.gsub(sub_query.join(" "), "")
-
-          operator.nil? ? objects : objects.send(operator, execute(klass, sub_query)).sort_by{ |o| o.id }
-        when "<="
-          query = sanitize_query(query)
-
-          array = query.split(" ")
-          sub_query = array[0..3]
-
-          operator = get_operator(sub_query)
-
-          objects = klass.all.select{ |o| o.send(sub_query.first).nil? ? false : ((o.send(sub_query.first).is_a?(Integer) ? (o.send(sub_query.first) <= sub_query[2].gsub("_", " ").to_i) : (o.send(sub_query.first).to_s) <= sub_query[2].gsub("_", " "))) }
-
-          sub_query = query.gsub(sub_query.join(" "), "")
-
-          operator.nil? ? objects : objects.send(operator, execute(klass, sub_query)).sort_by{ |o| o.id }
-        when "between"
-          query = sanitize_query(query)
-
-          array = query.split(" ")
-          sub_query = array[0..5]
-
-          operator = get_operator(sub_query)
-
-          objects = klass.all.select{ |o| (o.send(sub_query.first).is_a?(Integer) ? (o.send(sub_query.first) >= sub_query[2].gsub("_", " ").to_i && o.send(sub_query.first) <= sub_query[4].gsub("_", " ").to_i) : (o.send(sub_query.first).to_s) >= sub_query[2].gsub("_", " ") && o.send(sub_query.first) <= sub_query[4].gsub("_", " ")) }
-
-          sub_query = query.gsub(sub_query.join(" "), "")
-
-          operator.nil? ? objects : objects.send(operator, execute(klass, sub_query)).sort_by{ |o| o.id }
-        when "is"
-          query = sanitize_query(query)
-
-          array = query.split(" ")
-          size = array[2].downcase == "not" ? 4 : 3
-
-          sub_query = array[0..size]
-
-          operator = get_operator(sub_query)
-
-          objects = klass.all.select{ |o| size == 3 ? o.send(sub_query.first).blank? : !o.send(sub_query.first).blank? }
-
-          sub_query = query.gsub(sub_query.join(" "), "")
-
-          operator.nil? ? objects : objects.send(operator, execute(klass, sub_query)).sort_by{ |o| o.id }
-        else
-          []
-        end
+          [binding_operator, sub_query, objects]
       end
 
       def args_to_query(args)
