@@ -1,8 +1,10 @@
 # ActiveRepository
 
-ActiveRepository is designed so you can build your Business Models without depending on any ORM, it by default saves your data in memory using ActiveHash (https://github.com/zilkey/active_hash) gem. Then when you decides which ORM you want to use you only have to connect ActiveRepository with it. Actually it only works with ActiveRecord, we are working to give mongoid suppoort.
+ActiveRepository was designed so you can build your Business Models without depending on any ORM. It by default saves your data in memory using ActiveHash (https://github.com/zilkey/active_hash). Then when you decides which ORM you want to use you only have to connect ActiveRepository with it.
 
-It also has the advantage of letting you test directly in memory, no need to save data in disk. This gives a great boost on your test suite speed.
+Presently it only works with ActiveRecord. We are working on mongoid support.
+
+It also has the advantage of letting you test directly in memory, with no need to save data on disk, which gives a great boost to your test suite speed.
 
 ## Requirements
 
