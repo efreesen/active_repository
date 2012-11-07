@@ -20,4 +20,5 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency(%q<sqlite3>)
   gem.add_development_dependency(%q<activerecord>)
   gem.add_development_dependency(%q<mongoid>)
+  gem.add_development_dependency('rake')
 end
