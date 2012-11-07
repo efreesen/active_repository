@@ -1,6 +1,14 @@
 # ActiveRepository
 
-TODO: Write a gem description
+ActiveRepository is designed so you can build your Business Models without depending on any ORM, it by default saves your data in memory using ActiveHash (https://github.com/zilkey/active_hash) gem. Then when you decides which ORM you want to use you only have to connect ActiveRepository with it. Actually it only works with ActiveRecord, we are working to give mongoid suppoort.
+
+It also has the advantage of letting you test directly in memory, no need to save data in disk. This gives a great boost on your test suite speed.
+
+## Requirements
+
+### Ruby
+
+ActiveRepository requires Ruby version **>= 1.9.2**.
 
 ## Installation
 
