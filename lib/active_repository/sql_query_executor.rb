@@ -75,11 +75,23 @@ module ActiveHash
       def execute_sub_query(klass, sub_query)
         case @operator
         when "between"
-          klass.all.select{ |o| (o.send(sub_query.first).is_a?(Integer) ? (o.send(sub_query.first) >= sub_query[2].gsub("_", " ").to_i && o.send(sub_query.first) <= sub_query[4].gsub("_", " ").to_i) : (o.send(sub_query.first).to_s) >= sub_query[2].gsub("_", " ") && o.send(sub_query.first) <= sub_query[4].gsub("_", " ")) }
+          klass.all.select do |o|
+            field, first_attr, second_attr = convert_attrs(o.send(sub_query.first), sub_query[2], sub_query[4])
+
+            (field >= first_attr && field <= second_attr)
+          end
         when "is"
-          klass.all.select{ |o| sub_query.size == 3 ? o.send(sub_query.first).blank? : !o.send(sub_query.first).blank? }
+          klass.all.select do |o|
+            field = o.send(sub_query.first).blank?
+
+            sub_query.size == 3 ? field : !field
+          end
         else
-          klass.all.select{ |o| o.send(sub_query.first).nil? ? false : o.send(sub_query.first).to_s.send(@operator, sub_query[2].gsub("_", " ")) }
+          klass.all.select do |o|
+            field, attribute = convert_attrs(o.send(sub_query.first), sub_query[2])
+
+            field.blank? ? false : field.send(@operator, attribute)
+          end
         end
       end
 
@@ -94,6 +106,17 @@ module ActiveHash
         else
           param = param.to_s
         end
+      end
+
+      def convert_attrs(field, *attrs)
+        attrs.each_with_index do |attribute, i|
+          attribute = attribute.gsub("_", " ")
+          attrs[i] = field.is_a?(Integer) ? attribute.to_i : attribute
+        end
+
+        field = field.is_a?(Integer) ? field : field.to_s
+
+        [field, attrs].flatten
       end
     end
   end
