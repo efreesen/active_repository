@@ -193,9 +193,13 @@ module ActiveRepository
     end
 
     def self.delete_all
-      puts self.inspect
-      puts get_model_class.inspect
-      self == get_model_class ? super : get_model_class.delete_all
+      if self == get_model_class
+        super
+      elsif mongoid?
+        get_model_class.all.delete_all
+      else
+        get_model_class.delete_all
+      end
     end
 
     def self.where(*args)
