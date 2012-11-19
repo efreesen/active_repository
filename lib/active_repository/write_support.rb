@@ -51,6 +51,11 @@ module ActiveHash
       raise IdError.new("Duplicate Id found for record #{record.attributes}") if record_index.has_key?(record.id.to_s)
     end
 
+    def update_attribute(key, value)
+      self.send("#{key}=", value)
+      self.save(:validate => false)
+    end
+
     def readonly?
       false
     end
@@ -62,9 +67,13 @@ module ActiveHash
       true
     end
 
+    def to_param
+      id.present? ? id.to_s : nil
+    end
+
     def persisted?
       other = self.class.find_by_id(id)
-      other.present? && other.created_at
+      other.present?
     end
 
     def eql?(other)

@@ -3,7 +3,6 @@ require 'support/sql_query_shared_examples'
 
 require 'active_repository'
 require "active_record"
-require "mongoid"
 
 describe ActiveRepository, "Base" do
 

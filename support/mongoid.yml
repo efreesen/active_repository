@@ -1,0 +1,6 @@
+development:
+  sessions:
+    default:
+      database: active_repository
+      hosts:
+        - localhost:27017

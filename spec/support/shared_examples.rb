@@ -30,10 +30,9 @@ shared_examples ".all" do
 
   it "populates the data correctly" do
     records = Country.all
-    records.first.id.should == 1
-    records.first.name.should == "US"
-    records.last.id.should == 5
-    records.last.name.should == "Brazil"
+    records.should include(Country.first)
+    records.should include(Country.last)
+    records.size.should == 5
   end
 end
 
@@ -72,12 +71,13 @@ end
 
 shared_examples ".exists?" do
   it "checks if a record exists" do
-    id = Country.last.id + 1
+    id = Country.last.id
 
     Country.delete_all
     Country.exists?(id).should be_false
 
-    country = Country.create(:id => id, :name => "France")
+    country = Country.create(:name => "France")
+    id = country.id
 
     Country.exists?(id).should be_true
   end
@@ -120,7 +120,11 @@ shared_examples ".find" do
 
   context "with :all" do
     it "returns all records" do
-      Country.find(:all).should == [Country.find(1), Country.find(2), Country.find(3), Country.find(4), Country.find(5)]
+      records = Country.find(:all)
+
+      records.should include(Country.first)
+      records.should include(Country.last)
+      records.size.should == 5
     end
   end
 
@@ -446,9 +450,13 @@ shared_examples "#cache_key" do
   end
 
   it 'should use the record\'s updated_at if present' do
-    country = Country.create(:id => 6, :name => "foo")
+    country = Country.create(:name => "foo")
 
-    Country.first.cache_key.should == "countries/6-#{country.updated_at.to_s(:number)}"
+    id = Country.last.id
+
+    date_string = country.updated_at.nil? ? "" : "-#{country.updated_at.to_s(:number)}"
+
+    Country.first.cache_key.should == "countries/#{id}#{date_string}"
   end
 
   it 'should use "new" instead of the id for a new record' do
@@ -479,14 +487,15 @@ shared_examples ".create" do
 
   it "works with no args" do
     Country.all.should be_empty
-    country = Country.create :id => 6
-    country.id.should == 6
+    country = Country.create
+
+    country.id.should == Country.last.id
   end
 
   it "adds the new object to the data collection" do
     Country.all.should be_empty
-    country = Country.create :id => 6, :name => "foo"
-    country.id.should == 6
+    country = Country.create :name => "foo"
+    country.id.should == Country.last.id
     country.name.should == "foo"
     Country.all.should == [country]
   end
@@ -509,8 +518,8 @@ shared_examples ".create" do
 
   it "adds the new object to the data collection" do
     Country.all.should be_empty
-    country = Country.create :id => 6, :name => "foo"
-    country.id.should == 6
+    country = Country.create :name => "foo"
+    country.id.should == Country.last.id
     country.name.should == "foo"
 
     Country.all.should == [country]
