@@ -75,23 +75,35 @@ module ActiveHash
       def execute_sub_query(klass, sub_query)
         case @operator
         when "between"
-          klass.all.select do |o|
-            field, first_attr, second_attr = convert_attrs(o.send(sub_query.first), sub_query[2], sub_query[4])
-
-            (field >= first_attr && field <= second_attr)
-          end
+          execute_between(klass, sub_query)
         when "is"
-          klass.all.select do |o|
-            field = o.send(sub_query.first).blank?
-
-            sub_query.size == 3 ? field : !field
-          end
+          execute_is(klass, sub_query)
         else
-          klass.all.select do |o|
-            field, attribute = convert_attrs(o.send(sub_query.first), sub_query[2])
+          execute_operator(klass, sub_query)
+        end
+      end
 
-            field.blank? ? false : field.send(@operator, attribute)
-          end
+      def execute_between(klass, sub_query)
+        klass.all.select do |o|
+          field, first_attr, second_attr = convert_attrs(o.send(sub_query.first), sub_query[2], sub_query[4])
+
+          (field >= first_attr && field <= second_attr)
+        end
+      end
+
+      def execute_is(klass, sub_query)
+        klass.all.select do |o|
+          field = o.send(sub_query.first).blank?
+
+          sub_query.size == 3 ? field : !field
+        end
+      end
+
+      def execute_operator(klass, sub_query)
+        klass.all.select do |o|
+          field, attribute = convert_attrs(o.send(sub_query.first), sub_query[2])
+
+          field.blank? ? false : field.send(@operator, attribute)
         end
       end
 
