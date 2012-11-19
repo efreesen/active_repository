@@ -193,13 +193,7 @@ module ActiveRepository
     end
 
     def self.delete_all
-      if self == get_model_class
-        super
-      elsif mongoid?
-        get_model_class.all.entries.each &:delete
-      else
-        get_model_class.delete_all
-      end
+      self == get_model_class ? super : get_model_class.delete_all
     end
 
     def self.where(*args)
