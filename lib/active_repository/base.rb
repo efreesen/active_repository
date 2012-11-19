@@ -279,9 +279,7 @@ module ActiveRepository
 
     def serialize!(attributes)
       unless attributes.nil?
-        attributes.each do |k,v|
-          self.send("#{k.to_s == '_id' ? 'id' : k.to_s}=", v)
-        end
+        self.attributes = attributes
       end
 
       self
