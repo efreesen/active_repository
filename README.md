@@ -10,23 +10,23 @@ It also has the advantage of letting you test directly in memory, with no need t
 
 Here are some data for comparison:
 
-* ActiveRepository:
-  Finished in 0.63357 seconds
+* **ActiveRepository:**
+  Finished in **0.63357** seconds;
   78 examples, 0 failures
 
-* ActiveRecord:
-  Finished in 3.78 seconds
+* **ActiveRecord:**
+  Finished in **3.78** seconds;
   78 examples, 0 failures
 
-* Mongoid:
-  Finished in 5.25 seconds
+* **Mongoid:**
+  Finished in **5.25** seconds;
   78 examples, 0 failures
 
 ## Requirements
 
 ### Ruby
 
-ActiveRepository requires Ruby version **>= 1.9.2**.
+ActiveRepository requires Ruby version **>= 1.9.3**.
 
 ## Installation
 
