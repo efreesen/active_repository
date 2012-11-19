@@ -497,7 +497,7 @@ shared_examples ".create" do
     country = Country.create :name => "foo"
     country.id.should == Country.last.id
     country.name.should == "foo"
-    Country.all.should == [country]
+    Country.all.map(&:attributes).should == [country].map(&:attributes)
   end
 
   it "adds an auto-incrementing id if the id is nil" do
@@ -522,7 +522,7 @@ shared_examples ".create" do
     country.id.should == Country.last.id
     country.name.should == "foo"
 
-    Country.all.should == [country]
+    Country.all.map(&:attributes).should == [country].map(&:attributes)
   end
 
   it "updates count" do
@@ -584,7 +584,10 @@ shared_examples ".delete_all" do
   it "clears out all record" do
     country1 = Country.create
     country2 = Country.create
-    Country.all.should == [country1, country2]
+
+    all = [country1, country2]
+
+    Country.all.map(&:attributes).should == all.map(&:attributes)
     Country.delete_all
     Country.all.should be_empty
   end
