@@ -14,15 +14,13 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = ActiveRepository::VERSION
 
-  print "Ruby version: "
-  puts RUBY_VERSION
   gem.add_runtime_dependency(%q<active_hash>, [">= 0.9.12"])
   gem.add_runtime_dependency(%q<activemodel>, [">= 3.2.6"])
   gem.add_development_dependency(%q<rspec>, [">= 2.2.0"])
-  gem.add_development_dependency(%q<sqlite3>)# unless RUBY_VERSION == "jruby-19"
+  gem.add_development_dependency(%q<sqlite3>) unless RUBY_VERSION == "jruby-19mode"
   gem.add_development_dependency(%q<activerecord>)
   gem.add_development_dependency(%q<mongoid>)
   gem.add_development_dependency('rake')
-  # gem.add_development_dependency(%q<jdbc-sqlite3>) if RUBY_VERSION == "jruby-19"
+  gem.add_development_dependency(%q<jdbc-sqlite3>) if RUBY_VERSION == "jruby-19mode"
   # gem.add_development_dependency(%q<activerecord-jdbcsqlite3-adapter>) if RUBY_VERSION == "jruby-19"
 end
