@@ -196,7 +196,7 @@ module ActiveRepository
       if self == get_model_class
         super
       elsif mongoid?
-        get_model_class.all.delete_all
+        get_model_class.all.entries.each &:delete
       else
         get_model_class.delete_all
       end
