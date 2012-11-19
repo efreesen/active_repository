@@ -22,5 +22,6 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency(%q<mongoid>)
   gem.add_development_dependency('rake')
   gem.add_development_dependency(%q<jdbc-sqlite3>)  if RUBY_PLATFORM == 'java'
-  # gem.add_development_dependency(%q<activerecord-jdbcsqlite3-adapter>)  if RUBY_PLATFORM == 'java'
+  gem.add_development_dependency(%q<jruby-openssl>)  if RUBY_PLATFORM == 'java'
+  gem.add_development_dependency(%q<activerecord-jdbcsqlite3-adapter>)  if RUBY_PLATFORM == 'java'
 end
