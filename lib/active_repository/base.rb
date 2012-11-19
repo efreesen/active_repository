@@ -193,6 +193,7 @@ module ActiveRepository
     end
 
     def self.delete_all
+      puts get_model_class.inspect
       self == get_model_class ? super : get_model_class.delete_all
     end
 
