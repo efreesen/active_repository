@@ -584,7 +584,10 @@ shared_examples ".delete_all" do
   it "clears out all record" do
     country1 = Country.create
     country2 = Country.create
-    Country.all.should == [country1, country2]
+
+    all = [country1, country2]
+
+    Country.all.each_with_index { |o,i| o.should == all[i] }
     Country.delete_all
     Country.all.should be_empty
   end
