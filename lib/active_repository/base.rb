@@ -30,20 +30,12 @@ module ActiveRepository
     end
 
     def self.define_custom_find_by_field(field_name)
-      method_name = :"find_by_#{field_name}"
+      method_name = :"find_all_by_#{field_name}"
       the_meta_class.instance_eval do
         define_method(method_name) do |*args|
           object = nil
 
-          if self == get_model_class
-            object = self.where(field_name.to_sym => args.first).first
-          else
-            if mongoid?
-              object = get_model_class.where(field_name.to_sym => args.first).first
-            else
-              object = get_model_class.send(method_name, args)
-            end
-          end
+          object = self.find_by_field(field_name.to_sym, args)
 
           object.nil? ? nil : serialize!(object.attributes)
         end
@@ -56,20 +48,32 @@ module ActiveRepository
         define_method(method_name) do |*args|
           objects = []
 
-          if self == get_model_class
-            objects = self.where(field_name.to_sym => args.first)
-          else
-            objects = []
-            if mongoid?
-              objects = get_model_class.where(field_name.to_sym => args.first)
-            else
-              objects = get_model_class.send(method_name, args)
-            end
-          end
+          objects = self.find_all_by_field(field_name.to_sym, args)
 
           objects.empty? ? [] : objects.map{ |object| serialize!(object.attributes) }
         end
       end
+    end
+
+    def self.find_by_field(field_name, args)
+      self.find_all_by_field(field_name, args).first
+    end
+
+    def self.find_all_by_field(field_name, args)
+      objects = []
+
+      if self == get_model_class
+        objects = self.where(field_name.to_sym => args.first)
+      else
+        if mongoid?
+          objects = get_model_class.where(field_name.to_sym => args.first)
+        else
+          method_name = :"find_all_by_#{field_name}"
+          objects = get_model_class.send(method_name, args)
+        end
+      end
+
+      objects
     end
 
     def self.find(id)
@@ -125,7 +129,7 @@ module ActiveRepository
         super(id)
       else
         object = nil
-        
+
         if mongoid?
           object = get_model_class.where(:id => id).entries.first
         else
