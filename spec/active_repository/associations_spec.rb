@@ -7,13 +7,13 @@ describe ActiveRepository::Base, "associations" do
 
   before do
     class Country < ActiveRecord::Base
-      extend ActiveHash::Associations::ActiveRecordExtensions
+      extend ActiveRepository::Associations::ActiveRecordExtensions
       establish_connection :adapter => "sqlite3", :database => ":memory:"
       connection.create_table(:countries, :force => true) {}
     end
 
     class School < ActiveRecord::Base
-      extend ActiveHash::Associations::ActiveRecordExtensions
+      extend ActiveRepository::Associations::ActiveRecordExtensions
       establish_connection :adapter => "sqlite3", :database => ":memory:"
       connection.create_table(:schools, :force => true) do |t|
         t.integer :city_id
@@ -100,17 +100,17 @@ describe ActiveRepository::Base, "associations" do
 
   describe ActiveRepository::Associations::ActiveRecordExtensions do
 
-    describe "#belongs_to_active_hash" do
+    describe "#belongs_to_active_repository" do
       context "setting by id" do
         it "finds the correct records" do
-          School.belongs_to_active_hash :city
+          School.belongs_to_active_repository :city
           city = City.create
           school = School.create :city_id => city.id
           school.city.should == city
         end
 
         it "returns nil when the record does not exist" do
-          School.belongs_to_active_hash :city
+          School.belongs_to_active_repository :city
           school = School.create! :city_id => nil
           school.city.should be_nil
         end
@@ -118,21 +118,21 @@ describe ActiveRepository::Base, "associations" do
 
       context "setting by association" do
         it "finds the correct records" do
-          School.belongs_to_active_hash :city
+          School.belongs_to_active_repository :city
           city = City.create
           school = School.create :city => city
           school.city.should == city
         end
 
         it "returns nil when the record does not exist" do
-          School.belongs_to_active_hash :city
+          School.belongs_to_active_repository :city
           school = School.create! :city => nil
           school.city.should be_nil
         end
       end
 
       it "finds active record metadata for this association" do
-        School.belongs_to_active_hash :city
+        School.belongs_to_active_repository :city
         association = School.reflect_on_association(:city)
         association.should_not be_nil
         association.klass.name.should == City.name

@@ -3,7 +3,7 @@ module ActiveRepository
 
     module ActiveRecordExtensions
 
-      def belongs_to_active_hash(association_id, options = {})
+      def belongs_to_active_repository(association_id, options = {})
         options = {
           :class_name => association_id.to_s.classify,
           :foreign_key => association_id.to_s.foreign_key
