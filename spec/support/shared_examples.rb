@@ -475,7 +475,16 @@ shared_examples "#save" do
     country = Country.new :id => 1, :name => "foo", :monarch => nil, :language => nil
     country.persist.should be_true
     country.reload
-    Country.all.should == [country]
+
+    countries_attributes =  Country.all.map(&:attributes)
+    countries_attributes.delete(:created_at)
+    countries_attributes.delete(:updated_at)
+
+    expected_attributes = [country].map(&:attributes)
+    expected_attributes.delete(:created_at)
+    expected_attributes.delete(:updated_at)
+
+    countries_attributes.should == expected_attributes
   end
 end
 
@@ -497,7 +506,16 @@ shared_examples ".create" do
     country = Country.create :name => "foo"
     country.id.should == Country.last.id
     country.name.should == "foo"
-    Country.all.map(&:attributes).should == [country].map(&:attributes)
+
+    countries_attributes =  Country.all.map(&:attributes)
+    countries_attributes.delete(:created_at)
+    countries_attributes.delete(:updated_at)
+
+    expected_attributes = [country].map(&:attributes)
+    expected_attributes.delete(:created_at)
+    expected_attributes.delete(:updated_at)
+
+    countries_attributes.should == expected_attributes
   end
 
   it "adds an auto-incrementing id if the id is nil" do
@@ -522,7 +540,15 @@ shared_examples ".create" do
     country.id.should == Country.last.id
     country.name.should == "foo"
 
-    Country.all.map(&:attributes).should == [country].map(&:attributes)
+    countries_attributes =  Country.all.map(&:attributes)
+    countries_attributes.delete(:created_at)
+    countries_attributes.delete(:updated_at)
+
+    expected_attributes = [country].map(&:attributes)
+    expected_attributes.delete(:created_at)
+    expected_attributes.delete(:updated_at)
+
+    countries_attributes.should == expected_attributes
   end
 
   it "updates count" do
@@ -585,9 +611,15 @@ shared_examples ".delete_all" do
     country1 = Country.create
     country2 = Country.create
 
-    all = [country1, country2]
+    countries_attributes =  Country.all.map(&:attributes)
+    countries_attributes.delete(:created_at)
+    countries_attributes.delete(:updated_at)
 
-    Country.all.map(&:attributes).should == all.map(&:attributes)
+    expected_attributes = [country1, country2].map(&:attributes)
+    expected_attributes.delete(:created_at)
+    expected_attributes.delete(:updated_at)
+
+    countries_attributes.should == expected_attributes
     Country.delete_all
     Country.all.should be_empty
   end
