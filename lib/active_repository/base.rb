@@ -69,21 +69,18 @@ module ActiveRepository
         if self == get_model_class
           super(id)
         else
-          if id == :all
-            all.map { |o| serialize!(o.attributes) }
+          object = (id == :all) ? all : get_model_class.find(id)
+
+          if object.is_a?(Array)
+            object.map { |o| serialize!(o.attributes) }
           else
-            serialize!(get_model_class.find(id).attributes)
+            serialize!(object.attributes)
           end
         end
       rescue Exception => e
-        message = ""
-
-        if id.is_a?(Array)
-          message = "Couldn't find all #{self} objects with IDs (#{id.join(', ')})"
-        else
-          message = "Couldn't find #{self} with ID=#{id}"
-        end
-
+        message = id.is_a?(Array) ? 
+          "Couldn't find all #{self} objects with IDs (#{id.join(', ')})"
+          : "Couldn't find #{self} with ID=#{id}"
         raise ActiveHash::RecordNotFound.new(message)
       end
     end
