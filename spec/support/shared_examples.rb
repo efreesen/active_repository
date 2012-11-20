@@ -507,13 +507,18 @@ shared_examples ".create" do
     country.id.should == Country.last.id
     country.name.should == "foo"
 
-    countries_attributes =  Country.all.map(&:attributes)
-    countries_attributes.delete(:created_at)
-    countries_attributes.delete(:updated_at)
+    countries_attributes = Country.all.map(&:attributes)
+    expected_attributes  = [country].map(&:attributes)
 
-    expected_attributes = [country].map(&:attributes)
-    expected_attributes.delete(:created_at)
-    expected_attributes.delete(:updated_at)
+    countries_attributes.each do |a|
+      a.delete(:created_at)
+      a.delete(:updated_at)
+    end
+
+    expected_attributes.each do |a|
+      a.delete(:created_at)
+      a.delete(:updated_at)
+    end
 
     countries_attributes.should == expected_attributes
   end
@@ -540,13 +545,18 @@ shared_examples ".create" do
     country.id.should == Country.last.id
     country.name.should == "foo"
 
-    countries_attributes =  Country.all.map(&:attributes)
-    countries_attributes.delete(:created_at)
-    countries_attributes.delete(:updated_at)
+    countries_attributes = Country.all.map(&:attributes)
+    expected_attributes  = [country].map(&:attributes)
 
-    expected_attributes = [country].map(&:attributes)
-    expected_attributes.delete(:created_at)
-    expected_attributes.delete(:updated_at)
+    countries_attributes.each do |a|
+      a.delete(:created_at)
+      a.delete(:updated_at)
+    end
+
+    expected_attributes.each do |a|
+      a.delete(:created_at)
+      a.delete(:updated_at)
+    end
 
     countries_attributes.should == expected_attributes
   end
@@ -611,13 +621,18 @@ shared_examples ".delete_all" do
     country1 = Country.create
     country2 = Country.create
 
-    countries_attributes =  Country.all.map(&:attributes)
-    countries_attributes.delete(:created_at)
-    countries_attributes.delete(:updated_at)
+    countries_attributes = Country.all.map(&:attributes)
+    expected_attributes  = [country1, country2].map(&:attributes)
 
-    expected_attributes = [country1, country2].map(&:attributes)
-    expected_attributes.delete(:created_at)
-    expected_attributes.delete(:updated_at)
+    countries_attributes.each do |a|
+      a.delete(:created_at)
+      a.delete(:updated_at)
+    end
+
+    expected_attributes.each do |a|
+      a.delete(:created_at)
+      a.delete(:updated_at)
+    end
 
     countries_attributes.should == expected_attributes
     Country.delete_all
