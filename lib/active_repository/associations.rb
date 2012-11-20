@@ -33,7 +33,6 @@ module ActiveRepository
 
     module Methods
       def has_many(association_id, options = {})
-
         define_method(association_id) do
           options = {
             :class_name => association_id.to_s.classify,
@@ -48,8 +47,6 @@ module ActiveRepository
           else
             objects = klass.send("find_all_by_#{options[:foreign_key]}", id)
           end
-
-          objects.map{ |o| self.serialize!(o.attributes) }
         end
       end
 
@@ -79,13 +76,11 @@ module ActiveRepository
         field options[:foreign_key].to_sym
 
         define_method(association_id) do
-          klass = self.class.get_model_class
+          klass = options[:class_name].constantize
           id    = send(options[:foreign_key])
 
           if id.present?
             object = klass.find_by_id(id)
-
-            object.nil? || object.class == self.class ? object : self.class.serialize!(object.attributes)
           else
             nil
           end

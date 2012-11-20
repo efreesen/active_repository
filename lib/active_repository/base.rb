@@ -11,7 +11,7 @@ module ActiveRepository
     include ActiveModel::Validations::Callbacks
     include ActiveRepository::Associations
 
-    class_attribute :model_class, :save_in_memory
+    class_attribute :model_class, :save_in_memory, :instance_writer => false
 
     before_validation :set_timestamps
 
@@ -124,11 +124,15 @@ module ActiveRepository
       if self == get_model_class
         super(id)
       else
+        object = nil
+        
         if mongoid?
-          get_model_class.where(:id => id).entries.first
+          object = get_model_class.where(:id => id).entries.first
         else
-          get_model_class.find_by_id(id)
+          object = get_model_class.find_by_id(id)
         end
+
+        object.nil? ? nil : serialize!(object.attributes)
       end
     end
 
