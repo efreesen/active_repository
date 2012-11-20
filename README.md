@@ -22,6 +22,8 @@ Here are some data for comparison:
   Finished in **5.25** seconds;
   78 examples, 0 failures
 
+With ActiveRepository you can make associations with ActiveRecord, Mongoid and ActiveRepository seamlessly.
+
 ## Requirements
 
 ### Ruby
