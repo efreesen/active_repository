@@ -18,18 +18,6 @@ module ActiveRepository
     fields :created_at, :updated_at
 
     def self.define_custom_find_by_field(field_name)
-      method_name = :"find_by_#{field_name}"
-      unless has_singleton_method?(method_name)
-        the_meta_class.instance_eval do
-          define_method(method_name) do |*args|
-            object = get_model_class.send(method_name)
-            object.nil? ? nil : serialize!(object.attributes)
-          end
-        end
-      end
-    end
-
-    def self.define_custom_find_by_field(field_name)
       method_name = :"find_all_by_#{field_name}"
       the_meta_class.instance_eval do
         define_method(method_name) do |*args|
@@ -81,18 +69,10 @@ module ActiveRepository
         if self == get_model_class
           super(id)
         else
-          object = nil
-
           if id == :all
-            object = all
+            all.map { |o| serialize!(o.attributes) }
           else
-            object = get_model_class.find(id)
-          end
-
-          if object.is_a?(Array)
-            object.map { |o| serialize!(o.attributes) }
-          else
-            serialize!(object.attributes)
+            serialize!(get_model_class.find(id).attributes)
           end
         end
       rescue Exception => e
