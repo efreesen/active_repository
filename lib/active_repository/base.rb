@@ -71,16 +71,12 @@ module ActiveRepository
         else
           object = (id == :all) ? all : get_model_class.find(id)
 
-          if object.is_a?(Array)
-            object.map { |o| serialize!(o.attributes) }
-          else
-            serialize!(object.attributes)
-          end
+          serialize!(object)
         end
       rescue Exception => e
-        message = id.is_a?(Array) ? 
-          "Couldn't find all #{self} objects with IDs (#{id.join(', ')})"
-          : "Couldn't find #{self} with ID=#{id}"
+        message = "Couldn't find #{self} with ID=#{id}"
+        message = "Couldn't find all #{self} objects with IDs (#{id.join(', ')})" if id.is_a?(Array)
+
         raise ActiveHash::RecordNotFound.new(message)
       end
     end
@@ -270,10 +266,13 @@ module ActiveRepository
       self
     end
 
-    def self.serialize!(attributes)
-      object = self.new
-
-      object.serialize!(attributes)
+    def self.serialize!(other)
+      case other.class.to_s
+      when "Hash" then self.new.serialize!(other)
+      when "Array" then other.map { |o| serialize!(o.attributes) }
+      when "Moped::BSON::Document" then self.new.serialize!(other)
+      else self.new.serialize!(other.attributes)
+      end
     end
 
     def self.serialized_attributes
