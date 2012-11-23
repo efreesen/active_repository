@@ -222,11 +222,13 @@ module ActiveRepository
 
     def self.get(position)
       if self == get_model_class
-        id = get_model_class.all.map(&:id).sort.send(position)
+        ids = all.map(&:id).sort
+        id = ids.send(position)
 
-        self.find id
+        self.find(id)
       else
-        serialize! get_model_class.send(position).attributes
+        object = get_model_class.send(position)
+        serialize! object.attributes
       end
     end
 
@@ -284,7 +286,12 @@ module ActiveRepository
     end
 
     def self.get_model_class
+      return self if self.save_in_memory.nil?
       save_in_memory? ? self : self.model_class
+    end
+
+    def save_in_memory?
+      self.save_in_memory.nil? ? true : save_in_memory
     end
 
     protected
