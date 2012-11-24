@@ -222,10 +222,7 @@ module ActiveRepository
 
     def self.get(position)
       if self == get_model_class
-        ids = all.map(&:id).sort
-        id = ids.send(position)
-
-        self.find(id)
+        all.sort_by!{ |o| o.id }.send(position)
       else
         object = get_model_class.send(position)
         serialize! object.attributes
