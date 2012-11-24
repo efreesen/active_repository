@@ -230,7 +230,8 @@ module ActiveRepository
     end
 
     def convert(attribute="id")
-      object = self.class.get_model_class.where(attribute.to_sym => self.send(attribute)).first
+      klass = self.class.get_model_class
+      object = klass.where(attribute.to_sym => self.send(attribute)).first
       
       object = self.class.get_model_class.new if object.nil?
 
