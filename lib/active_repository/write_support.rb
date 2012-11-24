@@ -18,12 +18,15 @@ end
 module ActiveHash
   class Base
     def self.insert(record)
-      if self.all.map(&:to_s).include?(record.to_s)
-        record_index.delete(record.id.to_s)
+      record_id   = record.id.to_s
+      record_hash = record.hash
+
+      if self.all.map(&:hash).include?(record_hash)
+        record_index.delete(record_id)
         self.all.delete(record)
       end
 
-      if record_index[record.id.to_s].nil? || !self.all.map(&:to_s).include?(record.to_s)
+      if record_index[record_id].nil? || !self.all.map(&:hash).include?(record_hash)
         @records ||= []
         record.attributes[:id] ||= next_id
 

@@ -233,11 +233,13 @@ module ActiveRepository
       klass = self.class.get_model_class
       object = klass.where(attribute.to_sym => self.send(attribute)).first
       
-      object = self.class.get_model_class.new if object.nil?
+      object ||= self.class.get_model_class.new
 
-      self.attributes.each do |k,v|
-        object.send("#{k.to_s}=", v) unless k == :id
-      end
+      attributes = self.attributes
+
+      attributes.delete(:id)
+
+      object.attributes = attributes
 
       object.save
 
