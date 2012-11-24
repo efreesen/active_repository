@@ -230,13 +230,7 @@ module ActiveRepository
     end
 
     def convert(attribute="id")
-      object = nil
-
-      if mongoid?
-        object = self.class.where(attribute.to_sym => self.send(attribute)).first
-      else
-        object = self.class.get_model_class.send("find_by_#{attribute}", self.send(attribute))
-      end
+      object = self.class.get_model_class.where(attribute.to_sym => self.send(attribute)).first
       
       object = self.class.get_model_class.new if object.nil?
 
