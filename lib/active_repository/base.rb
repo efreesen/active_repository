@@ -3,15 +3,18 @@ require 'active_repository/uniqueness'
 require 'active_repository/write_support'
 require 'active_repository/sql_query_executor'
 require 'active_repository/finders'
+require 'active_repository/writers'
 
 module ActiveRepository
 
   class Base < ActiveHash::Base
     extend ActiveModel::Callbacks
     extend ActiveRepository::Finders
+    extend ActiveRepository::Writers
     include ActiveModel::Validations
     include ActiveModel::Validations::Callbacks
     include ActiveRepository::Associations
+    include ActiveRepository::Writers::InstanceMethods
 
     class_attribute :model_class, :save_in_memory, :instance_writer => false
 
@@ -33,62 +36,6 @@ module ActiveRepository
           get_model_class.exists?(id)
         end
       end
-    end
-
-    def self.find_or_create(attributes)
-      object = get_model_class.where(attributes).first
-
-      object = model_class.create(attributes) if object.nil?
-
-      serialize!(object.attributes)
-    end
-
-    def self.create(attributes={})
-      object = get_model_class.new(attributes)
-
-      object.id = nil if exists?(object.id)
-
-      if get_model_class == self
-        object.save
-      else
-        repository = serialize!(object.attributes)
-        repository.valid? ? (object = get_model_class.create(attributes)) : false
-      end
-
-      serialize!(object.attributes) unless object.class.name == self
-    end
-
-    def update_attributes(attributes)
-      object = nil
-      if mongoid?
-        object = self.class.get_model_class.find(self.id)
-      else
-        object = self.class.get_model_class.find(self.id)
-      end
-
-      attributes.each do |k,v|
-        object.update_attribute("#{k.to_s}", v) unless k == :id
-      end
-
-      self.reload
-    end
-
-    def update_attribute(key, value)
-      if self.class == self.class.get_model_class
-        super(key,value)
-      else
-        object = self.class.get_model_class.find(self.id)
-
-        if mongoid?
-          super(key,value)
-          key = key.to_s == 'id' ? '_id' : key.to_s
-        end
-
-        object.update_attribute(key, value)
-        object.save
-      end
-
-      self.reload
     end
 
     def self.all
@@ -151,12 +98,6 @@ module ActiveRepository
       self.id = object.id
 
       object
-    end
-
-    def attributes=(new_attributes)
-      new_attributes.each do |k,v|
-        self.send("#{k.to_s == '_id' ? 'id' : k.to_s}=", v)
-      end
     end
 
     def serialize!(attributes)
