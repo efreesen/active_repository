@@ -27,16 +27,7 @@ module ActiveHash
       end
 
       if record_index[record_id].nil? || !self.all.map(&:hash).include?(record_hash)
-        @records ||= []
-        record.attributes[:id] ||= next_id
-
-        validate_unique_id(record) if dirty
-        mark_dirty
-
-        if record.valid?
-          add_to_record_index({ record.id.to_s => @records.length })
-          @records << record
-        end
+        insert_record(record)
       end
     end
 
@@ -84,5 +75,19 @@ module ActiveHash
     end
 
     alias == eql?
+
+    private
+    def self.insert_record(record)
+      @records ||= []
+      record.attributes[:id] ||= next_id
+
+      validate_unique_id(record) if dirty
+      mark_dirty
+
+      if record.valid?
+        add_to_record_index({ record.id.to_s => @records.length })
+        @records << record
+      end
+    end
   end
 end
