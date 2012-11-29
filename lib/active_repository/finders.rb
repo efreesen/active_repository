@@ -26,8 +26,21 @@ module ActiveRepository
       end
     end
 
-    def find_by_field(field_name, args)
-      self.find_all_by_field(field_name, args).first
+    def find(id)
+      begin
+        if self == get_model_class
+          super(id)
+        else
+          object = (id == :all) ? all : get_model_class.find(id)
+
+          serialize!(object)
+        end
+      rescue Exception => e
+        message = "Couldn't find #{self} with ID=#{id}"
+        message = "Couldn't find all #{self} objects with IDs (#{id.join(', ')})" if id.is_a?(Array)
+
+        raise ActiveHash::RecordNotFound.new(message)
+      end
     end
 
     def find_all_by_field(field_name, args)
@@ -47,21 +60,8 @@ module ActiveRepository
       objects
     end
 
-    def find(id)
-      begin
-        if self == get_model_class
-          super(id)
-        else
-          object = (id == :all) ? all : get_model_class.find(id)
-
-          serialize!(object)
-        end
-      rescue Exception => e
-        message = "Couldn't find #{self} with ID=#{id}"
-        message = "Couldn't find all #{self} objects with IDs (#{id.join(', ')})" if id.is_a?(Array)
-
-        raise ActiveHash::RecordNotFound.new(message)
-      end
+    def find_by_field(field_name, args)
+      self.find_all_by_field(field_name, args).first
     end
 
     def find_by_id(id)

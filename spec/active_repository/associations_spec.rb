@@ -21,13 +21,9 @@ describe ActiveRepository::Base, "associations" do
     end
 
     class City < ActiveRepository::Base
-      City.set_model_class(self)
-      City.set_save_in_memory(true)
     end
 
     class Author < ActiveRepository::Base
-      Author.set_model_class(self)
-      Author.set_save_in_memory(true)
     end
 
     class Book < ActiveRecord::Base
@@ -261,14 +257,9 @@ describe ActiveRepository::Base, "associations" do
   describe "Multiple ORM" do
     before do
       Object.send :remove_const, :City
-      # Object.send :remove_const, :Author
       Object.send :remove_const, :Country
-      # Object.send :remove_const, :School
-      # Object.send :remove_const, :Book
 
       class Country < ActiveRepository::Base
-        Country.set_model_class(Country)
-        Country.set_save_in_memory(true)
         has_many :states
       end
 

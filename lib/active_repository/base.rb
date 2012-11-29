@@ -22,8 +22,16 @@ module ActiveRepository
 
     fields :created_at, :updated_at
 
-    def reload
-      serialize! self.class.get_model_class.find(self.id).attributes
+    def self.all
+      self == get_model_class ? super : get_model_class.all.map { |object| serialize!(object.attributes) }
+    end
+
+    def self.constantize
+      self.to_s.constantize
+    end
+
+    def self.delete_all
+      self == get_model_class ? super : get_model_class.delete_all
     end
 
     def self.exists?(id)
@@ -38,12 +46,35 @@ module ActiveRepository
       end
     end
 
-    def self.all
-      self == get_model_class ? super : get_model_class.all.map { |object| serialize!(object.attributes) }
+    def self.get_model_class
+      return self if self.save_in_memory.nil?
+      save_in_memory? ? self : self.model_class
     end
 
-    def self.delete_all
-      self == get_model_class ? super : get_model_class.delete_all
+    def self.serialize!(other)
+      case other.class.to_s
+      when "Hash" then self.new.serialize!(other)
+      when "Array" then other.map { |o| serialize!(o.attributes) }
+      when "Moped::BSON::Document" then self.new.serialize!(other)
+      else self.new.serialize!(other.attributes)
+      end
+    end
+
+    def self.serialized_attributes
+      field_names.map &:to_s
+    end
+
+    def self.set_model_class(value)
+      self.model_class = value if model_class.nil?
+
+      field_names.each do |field_name|
+        define_custom_find_by_field(field_name)
+        define_custom_find_all_by_field(field_name)
+      end
+    end
+
+    def self.set_save_in_memory(value)
+      self.save_in_memory = value if save_in_memory.nil?
     end
 
     def self.where(*args)
@@ -62,42 +93,18 @@ module ActiveRepository
       end
     end
 
-    def self.set_model_class(value)
-      self.model_class = value if model_class.nil?
-
-      field_names.each do |field_name|
-        define_custom_find_by_field(field_name)
-        define_custom_find_all_by_field(field_name)
-      end
-    end
-
-    def self.set_save_in_memory(value)
-      self.save_in_memory = value if save_in_memory.nil?
-    end
-
     def persist
       if self.valid?
         save_in_memory? ? save : self.convert
       end
     end
 
-    def convert(attribute="id")
-      klass = self.class.get_model_class
-      object = klass.where(attribute.to_sym => self.send(attribute)).first
-      
-      object ||= self.class.get_model_class.new
+    def reload
+      serialize! self.class.get_model_class.find(self.id).attributes
+    end
 
-      attributes = self.attributes
-
-      attributes.delete(:id)
-
-      object.attributes = attributes
-
-      object.save
-
-      self.id = object.id
-
-      object
+    def save_in_memory?
+      self.save_in_memory.nil? ? true : save_in_memory
     end
 
     def serialize!(attributes)
@@ -108,49 +115,42 @@ module ActiveRepository
       self
     end
 
-    def self.serialize!(other)
-      case other.class.to_s
-      when "Hash" then self.new.serialize!(other)
-      when "Array" then other.map { |o| serialize!(o.attributes) }
-      when "Moped::BSON::Document" then self.new.serialize!(other)
-      else self.new.serialize!(other.attributes)
-      end
-    end
-
-    def self.serialized_attributes
-      field_names.map &:to_s
-    end
-
-    def self.constantize
-      self.to_s.constantize
-    end
-
-    def self.get_model_class
-      return self if self.save_in_memory.nil?
-      save_in_memory? ? self : self.model_class
-    end
-
-    def save_in_memory?
-      self.save_in_memory.nil? ? true : save_in_memory
-    end
-
     protected
+      def convert(attribute="id")
+        klass = self.class.get_model_class
+        object = klass.where(attribute.to_sym => self.send(attribute)).first
+        
+        object ||= self.class.get_model_class.new
+
+        attributes = self.attributes
+
+        attributes.delete(:id)
+
+        object.attributes = attributes
+
+        object.save
+
+        self.id = object.id
+
+        object
+      end
+
       def model_class
         self.model_class
       end
 
     private
-      def set_timestamps
-        self.created_at = DateTime.now.utc if self.new_record?
-        self.updated_at = DateTime.now.utc
-      end
-
       def self.mongoid?
         get_model_class.included_modules.include?(Mongoid::Document)
       end
 
       def mongoid?
         self.class.mongoid?
+      end
+
+      def set_timestamps
+        self.created_at = DateTime.now.utc if self.new_record?
+        self.updated_at = DateTime.now.utc
       end
   end
 end

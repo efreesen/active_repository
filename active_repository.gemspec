@@ -13,6 +13,8 @@ Gem::Specification.new do |gem|
   gem.name          = "active_repository"
   gem.require_paths = ["lib"]
   gem.version       = ActiveRepository::VERSION
+  gem.license       = "MIT"
+  gem.files         = ["README.md", "LICENSE"]
 
   gem.add_runtime_dependency(%q<active_hash>, [">= 0.9.12"])
   gem.add_runtime_dependency(%q<activemodel>, [">= 3.2.6"])

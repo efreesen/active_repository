@@ -1,8 +1,16 @@
+# Defines the relations between ActiveRepository objects and/or ActiveRecord Models.
+#
+# Author::    Caio Torres  (mailto:efreesen@gmail.com)
+# License::   MIT
+
 module ActiveRepository
   module Associations
 
+    #:nodoc:
     module ActiveRecordExtensions
 
+      
+      # Defines belongs to type relation between ActiveRepository objects and ActivRecord Models.
       def belongs_to_active_repository(association_id, options = {})
         options = {
           :class_name => association_id.to_s.classify,
@@ -27,11 +35,14 @@ module ActiveRepository
 
     end
 
+    #:nodoc:
     def self.included(base)
       base.extend Methods
     end
 
+    #:nodoc:
     module Methods
+      # Defines "has many" type relation between ActiveRepository objects
       def has_many(association_id, options = {})
         define_method(association_id) do
           options = {
@@ -50,6 +61,7 @@ module ActiveRepository
         end
       end
 
+      # Defines "has one" type relation between ActiveRepository objects
       def has_one(association_id, options = {})
         define_method(association_id) do
           options = {
@@ -66,6 +78,7 @@ module ActiveRepository
         end
       end
 # 
+      # Defines "belongs to" type relation between ActiveRepository objects
       def belongs_to(association_id, options = {})
 
         options = {

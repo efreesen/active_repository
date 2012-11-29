@@ -1,12 +1,6 @@
 module ActiveHash
   class SQLQueryExecutor
     class << self
-      def execute(klass, query)
-        @operator, @sub_query, @objects = process_first(klass, query, query.split(" ")[1])
-
-        @operator.nil? ? @objects : @objects.send(@operator, execute(klass, @sub_query)).sort_by{ |o| o.id }
-      end
-
       def args_to_query(args)
         return args.first if args.size == 1
 
@@ -20,32 +14,13 @@ module ActiveHash
         args_to_query(args)
       end
 
+      def execute(klass, query)
+        @operator, @sub_query, @objects = process_first(klass, query, query.split(" ")[1])
+
+        @operator.nil? ? @objects : @objects.send(@operator, execute(klass, @sub_query)).sort_by{ |o| o.id }
+      end
+
       private
-      def process_first(klass, query, operator)
-        @operator = operator == "=" ? "==" : operator
-        @query    = sanitize_query(query)
-        sub_query = divide_query
-
-        binding_operator = get_operator(sub_query)
-
-        objects = execute_sub_query(klass, sub_query)
-
-        sub_query = query.gsub(sub_query.join(" "), "")
-
-        [binding_operator, sub_query, objects]
-      end
-
-      def sanitize_query(query)
-        new_query = query
-        params = query.scan(/([\"'])(.*?)\1/)
-
-        params.each do |quote, param|
-          new_query = new_query.gsub(quote,"").gsub(param, param.gsub(" ", "_"))
-        end
-
-        new_query
-      end
-
       def divide_query
         array = @query.split(" ")
         case @operator
@@ -59,27 +34,27 @@ module ActiveHash
         end
       end
 
-      def get_operator(attributes)
-        operator = attributes.size >= 4 ? attributes.last : nil
-
-        case operator
-        when "or"
-          "+"
-        when "and"
-          "&"
-        else
-          nil
+      def convert_attrs(field, *attrs)
+        attrs.each_with_index do |attribute, i|
+          attribute = attribute.gsub("_", " ")
+          attrs[i] = field.is_a?(Integer) ? attribute.to_i : attribute
         end
+
+        field = field.is_a?(Integer) ? field : field.to_s
+
+        [field, attrs].flatten
       end
 
-      def execute_sub_query(klass, sub_query)
-        case @operator
-        when "between"
-          execute_between(klass, sub_query)
-        when "is"
-          execute_is(klass, sub_query)
+      def convert_param(param)
+        case param.class.name
+        when "String"
+          param = "'#{param}'"
+        when "Date"
+          param = "'#{param.strftime("%Y-%m-%d")}'"
+        when "Time"
+          param = "'#{param.strftime("%Y-%m-%d %H:%M:%S %z")}'"
         else
-          execute_operator(klass, sub_query)
+          param = param.to_s
         end
       end
 
@@ -107,28 +82,50 @@ module ActiveHash
         end
       end
 
-      def convert_param(param)
-        case param.class.name
-        when "String"
-          param = "'#{param}'"
-        when "Date"
-          param = "'#{param.strftime("%Y-%m-%d")}'"
-        when "Time"
-          param = "'#{param.strftime("%Y-%m-%d %H:%M:%S %z")}'"
+      def execute_sub_query(klass, sub_query)
+        case @operator
+        when "between"
+          execute_between(klass, sub_query)
+        when "is"
+          execute_is(klass, sub_query)
         else
-          param = param.to_s
+          execute_operator(klass, sub_query)
         end
       end
 
-      def convert_attrs(field, *attrs)
-        attrs.each_with_index do |attribute, i|
-          attribute = attribute.gsub("_", " ")
-          attrs[i] = field.is_a?(Integer) ? attribute.to_i : attribute
+      def get_operator(attributes)
+        operator = attributes.size >= 4 ? attributes.last : nil
+
+        case operator
+        when "or"  then "+"
+        when "and" then "&"
+        else nil
+        end
+      end
+
+      def process_first(klass, query, operator)
+        @operator = operator == "=" ? "==" : operator
+        @query    = sanitize_query(query)
+        sub_query = divide_query
+
+        binding_operator = get_operator(sub_query)
+
+        objects = execute_sub_query(klass, sub_query)
+
+        sub_query = query.gsub(sub_query.join(" "), "")
+
+        [binding_operator, sub_query, objects]
+      end
+
+      def sanitize_query(query)
+        new_query = query
+        params = query.scan(/([\"'])(.*?)\1/)
+
+        params.each do |quote, param|
+          new_query = new_query.gsub(quote,"").gsub(param, param.gsub(" ", "_"))
         end
 
-        field = field.is_a?(Integer) ? field : field.to_s
-
-        [field, attrs].flatten
+        new_query
       end
     end
   end

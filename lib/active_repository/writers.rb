@@ -1,5 +1,20 @@
 module ActiveRepository
   module Writers
+    def create(attributes={})
+      object = get_model_class.new(attributes)
+
+      object.id = nil if exists?(object.id)
+
+      if get_model_class == self
+        object.save
+      else
+        repository = serialize!(object.attributes)
+        repository.valid? ? (object = get_model_class.create(attributes)) : false
+      end
+
+      serialize!(object.attributes) unless object.class.name == self
+    end
+
     def find_or_create(attributes)
       object = get_model_class.where(attributes).first
 
@@ -23,20 +38,12 @@ module ActiveRepository
       serialize!(object.attributes) unless object.class.name == self
     end
 
+
     module InstanceMethods
-      def update_attributes(attributes)
-        object = nil
-        if mongoid?
-          object = self.class.get_model_class.find(self.id)
-        else
-          object = self.class.get_model_class.find(self.id)
+      def attributes=(new_attributes)
+        new_attributes.each do |k,v|
+          self.send("#{k.to_s == '_id' ? 'id' : k.to_s}=", v)
         end
-
-        attributes.each do |k,v|
-          object.update_attribute("#{k.to_s}", v) unless k == :id
-        end
-
-        self.reload
       end
 
       def update_attribute(key, value)
@@ -57,10 +64,19 @@ module ActiveRepository
         self.reload
       end
 
-      def attributes=(new_attributes)
-        new_attributes.each do |k,v|
-          self.send("#{k.to_s == '_id' ? 'id' : k.to_s}=", v)
+      def update_attributes(attributes)
+        object = nil
+        if mongoid?
+          object = self.class.get_model_class.find(self.id)
+        else
+          object = self.class.get_model_class.find(self.id)
         end
+
+        attributes.each do |k,v|
+          object.update_attribute("#{k.to_s}", v) unless k == :id
+        end
+
+        self.reload
       end
     end
   end
