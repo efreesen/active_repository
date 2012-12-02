@@ -23,22 +23,6 @@ module ActiveRepository
       serialize!(object.attributes)
     end
 
-    def create(attributes={})
-      object = get_model_class.new(attributes)
-
-      object.id = nil if exists?(object.id)
-
-      if get_model_class == self
-        object.save
-      else
-        repository = serialize!(object.attributes)
-        repository.valid? ? (object = get_model_class.create(attributes)) : false
-      end
-
-      serialize!(object.attributes) unless object.class.name == self
-    end
-
-
     module InstanceMethods
       def attributes=(new_attributes)
         new_attributes.each do |k,v|
