@@ -7,6 +7,38 @@ require 'active_repository/writers'
 
 module ActiveRepository
 
+  # Base class for ActiveRepository gem.
+  # Extends it in order to use it.
+  # 
+  # == Options
+  #
+  # There are 2 class attributes to help configure your ActiveRepository class:
+  #
+  #   * +class_model+: Use it to specify the class that is responsible for the
+  #     persistence of the objects. Default is self, so it is always saving in
+  #     memory by default.
+  #
+  #   * +save_in_memory+: Used to ignore the class_model attribute, you can use
+  #     it in your test suite, this way all your tests will be saved in memory.
+  #     Default is set to true so it saves in memory by default.
+  #     
+  #
+  # == Examples
+  #
+  # Using ActiveHash to persist objects in memory:
+  #
+  #   class SaveInMemoryTest < ActiveRepository::Base
+  #   end
+  #
+  # Using ActiveRecord/Mongoid to persist objects:
+  #
+  #    class SaveInORMOrODMTest < ActiveRepository::Base
+  #      SaveInORMOrODMTest.set_model_class(ORMOrODMModelClass)
+  #      SaveInORMOrODMTest.set_save_in_memory(false)
+  #    end
+  #
+  # Author::    Caio Torres  (mailto:efreesen@gmail.com)
+  # License::   MIT
   class Base < ActiveHash::Base
     extend ActiveModel::Callbacks
     extend ActiveRepository::Finders
@@ -22,18 +54,22 @@ module ActiveRepository
 
     fields :created_at, :updated_at
 
+    # Returns all persisted objects
     def self.all
       self == get_model_class ? super : get_model_class.all.map { |object| serialize!(object.attributes) }
     end
 
+    # Constantize class name
     def self.constantize
       self.to_s.constantize
     end
 
+    # Deletes all persisted objects
     def self.delete_all
       self == get_model_class ? super : get_model_class.delete_all
     end
 
+    # Checks the existence of a persisted object with the specified id
     def self.exists?(id)
       if self == get_model_class
         !find_by_id(id).nil?
@@ -46,11 +82,13 @@ module ActiveRepository
       end
     end
 
+    # Returns the Class responsible for persisting the objects
     def self.get_model_class
       return self if self.save_in_memory.nil?
       save_in_memory? ? self : self.model_class
     end
 
+    # Converts Persisted object(s) to it's ActiveRepository counterpart
     def self.serialize!(other)
       case other.class.to_s
       when "Hash" then self.new.serialize!(other)
@@ -60,10 +98,12 @@ module ActiveRepository
       end
     end
 
+    # Returns a array with the field names of the Class
     def self.serialized_attributes
       field_names.map &:to_s
     end
 
+    # Sets the class attribute model_class, responsible to persist the ActiveRepository objects
     def self.set_model_class(value)
       self.model_class = value if model_class.nil?
 
@@ -73,10 +113,19 @@ module ActiveRepository
       end
     end
 
+    # Sets the class attribute save_in_memory, set it to true to ignore model_class attribute
+    # and persist objects in memory
     def self.set_save_in_memory(value)
       self.save_in_memory = value if save_in_memory.nil?
     end
 
+    # Searches persisted objects that matches the criterias in the parameters.
+    # Can be used in ActiveRecord/Mongoid way or in SQL like way.
+    #
+    # Example:
+    #
+    #   * RelatedClass.where(:name => "Peter")
+    #   * RelatedClass.where("name = 'Peter'")
     def self.where(*args)
       raise ArgumentError.new("wrong number of arguments (0 for 1)") if args.empty?
       if self == get_model_class
@@ -93,20 +142,25 @@ module ActiveRepository
       end
     end
 
+    # Persists the object using the class defined on the model_class attribute, if none defined it 
+    # is saved in memory.
     def persist
       if self.valid?
         save_in_memory? ? save : self.convert
       end
     end
 
+    # Gathers the persisted object from database and updates self with it's attributes.
     def reload
       serialize! self.class.get_model_class.find(self.id).attributes
     end
 
+    # Returns the value of the save_in_memory class attribute
     def save_in_memory?
       self.save_in_memory.nil? ? true : save_in_memory
     end
 
+    # Updates attributes from self with the attributes from the parameters
     def serialize!(attributes)
       unless attributes.nil?
         self.attributes = attributes
@@ -116,6 +170,8 @@ module ActiveRepository
     end
 
     protected
+      # Find related object on the database and updates it with attributes in self, if it didn't
+      # find it on database it creates a new one.
       def convert(attribute="id")
         klass = self.class.get_model_class
         object = klass.where(attribute.to_sym => self.send(attribute)).first
@@ -135,19 +191,23 @@ module ActiveRepository
         object
       end
 
+      # Returns the value of the model_class attribute.
       def model_class
         self.model_class
       end
 
     private
+      # Checks if model_class is a Mongoid model
       def self.mongoid?
         get_model_class.included_modules.include?(Mongoid::Document)
       end
 
+      # Checks if model_class is a Mongoid model
       def mongoid?
         self.class.mongoid?
       end
 
+      # Updates created_at and updated_at
       def set_timestamps
         self.created_at = DateTime.now.utc if self.new_record?
         self.updated_at = DateTime.now.utc

@@ -77,7 +77,7 @@ module ActiveRepository
           scope.send("find_by_#{options[:foreign_key]}", id)
         end
       end
-# 
+
       # Defines "belongs to" type relation between ActiveRepository objects
       def belongs_to(association_id, options = {})
 
