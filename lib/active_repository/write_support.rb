@@ -1,6 +1,8 @@
 require 'active_hash'
 require 'active_repository/sql_query_executor'
 
+# Changes made in order to make write support in ActiveHash.
+
 begin
   klass = Module.const_get(ActiveRecord::Rollback)
   unless klass.is_a?(Class)

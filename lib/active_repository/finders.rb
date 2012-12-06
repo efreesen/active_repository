@@ -1,5 +1,7 @@
-module ActiveRepository
-  module Finders
+# Module containing methods responsible for searching ActiveRepository objects
+module ActiveRepository #:nodoc:
+  module Finders #:nodoc:
+    # Defines fiend_by_field methods for the Class
     def define_custom_find_by_field(field_name)
       method_name = :"find_all_by_#{field_name}"
       the_meta_class.instance_eval do
@@ -13,6 +15,7 @@ module ActiveRepository
       end
     end
 
+    # Defines fiend_all_by_field methods for the Class
     def define_custom_find_all_by_field(field_name)
       method_name = :"find_all_by_#{field_name}"
       the_meta_class.instance_eval do
@@ -26,6 +29,7 @@ module ActiveRepository
       end
     end
 
+    # Searches for a object containing the id in #id
     def find(id)
       begin
         if self == get_model_class
@@ -43,6 +47,7 @@ module ActiveRepository
       end
     end
 
+    # Searches all objects that matches #field_name field with the #args value(s)
     def find_all_by_field(field_name, args)
       objects = []
 
@@ -60,10 +65,12 @@ module ActiveRepository
       objects
     end
 
+    # Searches first object that matches #field_name field with the #args value(s)
     def find_by_field(field_name, args)
       self.find_all_by_field(field_name, args).first
     end
 
+    # Searches for an object that has id with #id value, if none is found returns nil
     def find_by_id(id)
       if self == get_model_class
         super(id)
@@ -80,22 +87,21 @@ module ActiveRepository
       end
     end
 
+    # Returns first persisted object
     def first
-      get("first")
+      self == get_model_class ? super : get(:first)
     end
 
+    # Returns last persisted object
     def last
-      get("last")
+      self == get_model_class ? super : get(:last)
     end
 
     private
+    # Returns the object in the position specified in #position
     def get(position)
-      if self == get_model_class
-        all.sort_by!{ |o| o.id }.send(position)
-      else
-        object = get_model_class.send(position)
-        serialize! object.attributes
-      end
+      object = get_model_class.send(position)
+      serialize! object.attributes
     end
   end
 end
