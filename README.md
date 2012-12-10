@@ -46,7 +46,20 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Firstly you must inherit ActiveRepository::Base:
+
+  class User < ActiveHash::Base
+    # Defines the fields of the class
+    fields :name, :email, :birthdate
+
+    # Defines the class responsible for persisting data
+    set_model_class(Country)
+
+    # Set this to true in order to ignore model_class attribute and persist in memory
+    set_save_in_memory(true)
+  end
+
+Then it is just using it as if it was your ActiveRecord model or Mongoid Document.
 
 ## Contributing
 
