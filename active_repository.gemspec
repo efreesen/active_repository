@@ -14,7 +14,21 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = ActiveRepository::VERSION
   gem.license       = "MIT"
-  gem.files         = ["README.md", "LICENSE"]
+  gem.files         = [
+    "LICENSE",
+    "README.md",
+    "active_repository.gemspec",
+    Dir.glob("lib/**/*")
+  ].flatten
+  gem.test_files = [
+    "Gemfile",
+    "spec/active_repository/base_spec.rb",
+    "spec/active_repository/associations_spec.rb",
+    "spec/active_repository/sql_query_executor_spec.rb",
+    "spec/support/shared_examples.rb",
+    "spec/support/sql_query_shared_examples.rb",
+    "spec/spec_helper.rb"
+  ]
 
   gem.add_runtime_dependency(%q<active_hash>, [">= 0.9.12"])
   gem.add_runtime_dependency(%q<activemodel>, [">= 3.2.6"])
