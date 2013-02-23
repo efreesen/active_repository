@@ -65,7 +65,7 @@ P.S.: Just be careful, the set_save_in_memory method should always be called aft
 
     class User < ActiveRepository::Base
       # Defines the class responsible for persisting data
-      set_model_class(Country)
+      set_model_class(UserModel)
 
       # Set this to true in order to ignore model_class attribute and persist in memory
       set_save_in_memory(true)
@@ -77,7 +77,7 @@ Then, you have only to set the fields it is going to use:
       # Defines the fields of the class
       fields :name, :email, :birthdate
 
-      set_model_class(Country)
+      set_model_class(UserModel)
 
       set_save_in_memory(true)
     end
