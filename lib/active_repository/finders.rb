@@ -67,13 +67,15 @@ module ActiveRepository #:nodoc:
 
     # Searches first object that matches #field_name field with the #args value(s)
     def find_by_field(field_name, args)
-      self.find_all_by_field(field_name, args).first
+      self.find_all_by_field(field_name, args).first.dup
     end
 
     # Searches for an object that has id with #id value, if none is found returns nil
     def find_by_id(id)
       if self == get_model_class
-        super(id)
+        object = super(id)
+
+        object.nil? ? nil : object.dup
       else
         object = nil
 
@@ -101,7 +103,7 @@ module ActiveRepository #:nodoc:
     # Returns the object in the position specified in #position
     def get(position)
       object = get_model_class.send(position)
-      serialize! object.attributes
+      object.present? ? serialize!(object.attributes) : nil
     end
   end
 end

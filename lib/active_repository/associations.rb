@@ -80,7 +80,6 @@ module ActiveRepository
 
       # Defines "belongs to" type relation between ActiveRepository objects
       def belongs_to(association_id, options = {})
-
         options = {
           :class_name => association_id.to_s.classify,
           :foreign_key => association_id.to_s.foreign_key
@@ -100,7 +99,8 @@ module ActiveRepository
         end
 
         define_method("#{association_id}=") do |new_value|
-          attributes[options[:foreign_key].to_sym] = new_value ? new_value.id : nil
+          attributes.delete(association_id.to_sym)
+          send("#{options[:foreign_key]}=", (new_value.try(:id) ? new_value.id : new_value))
         end
 
       end

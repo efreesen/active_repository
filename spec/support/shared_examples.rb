@@ -63,7 +63,7 @@ shared_examples ".where" do
   end
 
   it "if id exists, use auto increment id" do
-    country = Country.create(:id => 1, :name => "Russia", :language => 'Russian')
+    country = Country.create(:name => "Russia", :language => 'Russian')
 
     country.id.should_not == 1
   end
@@ -472,7 +472,7 @@ shared_examples "#save" do
 
   it "adds the new object to the data collection" do
     Country.all.should be_empty
-    country = Country.new :id => 1, :name => "foo", :monarch => nil, :language => nil
+    country = Country.new :name => "foo", :monarch => nil, :language => nil
     country.persist.should be_true
     country.reload
 
@@ -526,17 +526,10 @@ shared_examples ".create" do
   it "adds an auto-incrementing id if the id is nil" do
     country1 = Country.new :name => "foo"
     country1.save
-    country1.id.should == 1
 
-    country2 = Country.new :name => "bar", :id => 2
+    country2 = Country.new :name => "bar"
     country2.save
-    country2.id.should == 2
-  end
-
-  it "does not add auto-incrementing id if the id is present" do
-    country1 = Country.new :id => 456, :name => "foo"
-    country1.save
-    country1.id.should == 456
+    country2.id.should == country1.id + 1
   end
 
   it "adds the new object to the data collection" do

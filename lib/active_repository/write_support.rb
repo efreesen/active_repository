@@ -57,10 +57,16 @@ module ActiveHash
     end
 
     def save(*args)
-      record = self.class.find_by_id(self.id)
+      if self.valid?
+        record = self.class.find_by_id(self.id)
 
-      self.class.insert(self) if record.nil? && record != self
-      true
+        self.class.insert(self) if record.nil? && record != self
+
+        self.id = self.class.last.id if self.id.nil?
+        true
+      else
+        false
+      end
     end
 
     def to_param
