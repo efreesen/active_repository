@@ -84,6 +84,8 @@ Then, you have only to set the fields it is going to use:
 
 Now you are all set and ready to go. It is just using ActiveRepository as if it was your ActiveRecord model or Mongoid Document.
 
+You can check an example project here: https://github.com/efreesen/sports_betting_engine
+
 ## Contributing
 
 1. Fork it
