@@ -46,12 +46,24 @@ Or install it yourself as:
 
 ## Usage
 
-Firstly you must inherit ActiveRepository::Base:
+To use it you should inherit ActiveRepository::Base:
 
-    class User < ActiveHash::Base
-      # Defines the fields of the class
-      fields :name, :email, :birthdate
+    class User < ActiveRepository::Base
+    end
 
+ActiveRepository::Base has two class attributes to help it identify where it is going to persist data
+
+###model_class
+
+This attribute is used to identify the class responsible for persisting data, it should be the ActiveRecord model or the Mongoid Document.
+
+###save_in_memory
+
+This attribute is used to persist data directly into memory. When set to true, it ignores the model_class attribute value and save in the memory, if set to false it user model_class to persist data.
+
+P.S.: Just be careful, the set_save_in_memory method should always be called after set_model_class method.
+
+    class User < ActiveRepository::Base
       # Defines the class responsible for persisting data
       set_model_class(Country)
 
@@ -59,7 +71,18 @@ Firstly you must inherit ActiveRepository::Base:
       set_save_in_memory(true)
     end
 
-Then it is just using it as if it was your ActiveRecord model or Mongoid Document.
+Then, you have only to set the fields it is going to use:
+
+    class User < ActiveRepository::Base
+      # Defines the fields of the class
+      fields :name, :email, :birthdate
+
+      set_model_class(Country)
+
+      set_save_in_memory(true)
+    end
+
+Now you are all set and ready to go. It is just using ActiveRepository as if it was your ActiveRecord model or Mongoid Document.
 
 ## Contributing
 
