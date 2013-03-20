@@ -3,26 +3,40 @@ module ActiveRepository
   module Writers
     # Creates an object and persists it.
     def create(attributes={})
-      object = get_model_class.new(attributes)
+      object = self.new(attributes)
 
-      object.id = nil unless exists?(object.id)
+      if object.valid?
+        if get_model_class == self
+          object.id = nil unless exists?(object.id)
 
-      if get_model_class == self
-        object.save
-      else
-        repository = serialize!(object.attributes)
-        object = repository.valid? ? get_model_class.create(attributes) : repository
+          object.save
+        else
+          object = PersistenceAdapter.create(self, object.attributes)
+        end
       end
 
-      object.valid? ? serialize!(object.reload.attributes) : object
+      new_object = serialize!(object.reload.attributes)
+
+      new_object.valid?
+
+      new_object
     end
 
     # Searches for an object that matches the attributes on the parameter, if none is found
     # it creates one with the defined attributes.
     def find_or_create(attributes)
-      object = get_model_class.where(attributes).first
+      object = where(attributes).first
 
-      object = get_model_class.create(attributes) if object.nil?
+      object.nil? ? create(attributes) : object
+    end
+
+    def find_or_initialize(attributes)
+      object = where(attributes).first
+      object = self.new(attributes) if object.nil?
+
+      attributes.each do |key, value|
+        object.send("#{key.to_sym}=", value)
+      end
 
       serialize!(object.attributes)
     end
@@ -38,19 +52,22 @@ module ActiveRepository
 
       # Updates #key attribute with #value value.
       def update_attribute(key, value)
-        ret    = self.valid?
+        ret = self.valid?
 
         if ret
-          object = (self.id.nil? ? self.class.get_model_class.new : self.class.get_model_class.find(self.id))
-
           if self.class == self.class.get_model_class
+            object = self.class.find_or_initialize(:id => self.id)
+
             self.send("#{key}=", value)
 
             ret = save
           else
-            key = (key.to_s == 'id' ? '_id' : key.to_s) if mongoid?
+            # key = (key.to_s == 'id' ? '_id' : key.to_s) if mongoid?
 
-            ret = object.update_attribute(key,value)
+            ret, object = PersistenceAdapter.update_attribute(self.class, self.id, key, value)
+
+            self.attributes = object.attributes
+            # object.update_attribute(key,value)
           end
 
           reload
@@ -71,9 +88,13 @@ module ActiveRepository
           end
           save
         else
-          object = self.id.nil? ? model_class.new : model_class.find(self.id)
+          attributes = self.attributes.merge(attributes)
+          ret, object = PersistenceAdapter.update_attributes(self.class, self.id, attributes)
 
-          ret = object.update_attributes(attributes)
+          self.attributes = object.attributes
+          # object = self.id.nil? ? model_class.new : model_class.find(self.id)
+
+          # ret = object.update_attributes(attributes)
         end
 
         reload

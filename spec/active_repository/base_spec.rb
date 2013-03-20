@@ -18,7 +18,7 @@ describe ActiveRepository, "Base" do
 
   context "in_memory" do
     before do
-      Country.fields :name, :monarch, :language
+      Country.fields :name, :monarch, :language, :created_at, :updated_at
       Country.set_model_class(Country)
       Country.set_save_in_memory(true)
 
@@ -62,7 +62,7 @@ describe ActiveRepository, "Base" do
 
   context "active_record" do
     before do
-      Country.fields :name, :monarch, :language
+      Country.fields :name, :monarch, :language, :created_at, :updated_at
 
       class CountryModel < ActiveRecord::Base
         self.table_name = 'countries'
@@ -123,7 +123,7 @@ describe ActiveRepository, "Base" do
 
   context "mongoid" do
     before do
-      Country.fields :name, :monarch, :language
+      Country.fields :name, :monarch, :language, :created_at, :updated_at
 
       Mongoid.load!("support/mongoid.yml", :development)
 

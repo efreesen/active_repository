@@ -4,6 +4,7 @@ require 'active_repository/write_support'
 require 'active_repository/sql_query_executor'
 require 'active_repository/finders'
 require 'active_repository/writers'
+require 'active_repository/adapters/persistence_adapter'
 
 begin
   klass = Module.const_get(Mongoid::Document)
@@ -49,7 +50,7 @@ module ActiveRepository
   #      SaveInORMOrODMTest.set_save_in_memory(false)
   #    end
   #
-  # Author::    Caio Torres  (mailto:efreesen@gmail.com)
+  # Author::    Caio Torres (mailto:efreesen@gmail.com)
   # License::   MIT
   class Base < ActiveHash::Base
     extend ActiveModel::Callbacks
@@ -62,15 +63,16 @@ module ActiveRepository
 
     class_attribute :model_class, :save_in_memory, :instance_writer => false
 
-    before_validation :set_timestamps
+    # attr_accessor :errors
 
-    fields :created_at, :updated_at
+    before_validation :set_timestamps
 
     self.save_in_memory = true if self.save_in_memory == nil
 
     # Returns all persisted objects
     def self.all
-      self == get_model_class ? super : get_model_class.all.map { |object| serialize!(object.attributes) }
+      (self == get_model_class ? super : PersistenceAdapter.all(self).map { |object| serialize!(object.attributes) })
+      # self == get_model_class ? super : get_model_class.all.map { |object| serialize!(object.attributes) }
     end
 
     # Constantize class name
@@ -80,20 +82,21 @@ module ActiveRepository
 
     # Deletes all persisted objects
     def self.delete_all
-      self == get_model_class ? super : get_model_class.delete_all
+      self == get_model_class ? super : PersistenceAdapter.delete_all(self)
     end
 
     # Checks the existence of a persisted object with the specified id
     def self.exists?(id)
-      if self == get_model_class
-        !find_by_id(id).nil?
-      else
-        if mongoid?
-          find_by_id(id).present?
-        else
-          get_model_class.exists?(id)
-        end
-      end
+      self == get_model_class ? find_by_id(id).present? : PersistenceAdapter.exists?(self, id)
+      # if self == get_model_class
+      #   !find_by_id(id).nil?
+      # else
+      #   if mongoid?
+      #     find_by_id(id).present?
+      #   else
+      #     get_model_class.exists?(id)
+      #   end
+      # end
     end
 
     # Returns the Class responsible for persisting the objects
@@ -105,9 +108,9 @@ module ActiveRepository
     # Converts Persisted object(s) to it's ActiveRepository counterpart
     def self.serialize!(other)
       case other.class.to_s
-      when "Hash" then self.new.serialize!(other)
-      when "Array" then other.map { |o| serialize!(o.attributes) }
-      when "Moped::BSON::Document" then self.new.serialize!(other)
+      when "Hash", "ActiveSupport::HashWithIndifferentAccess" then self.new.serialize!(other)
+      when "Array"                                            then other.map { |o| serialize!(o.attributes) }
+      when "Moped::BSON::Document"                            then self.new.serialize!(other)
       else self.new.serialize!(other.attributes)
       end
     end
@@ -150,7 +153,8 @@ module ActiveRepository
       else
         objects = []
         args = args.first.is_a?(Hash) ? args.first : args
-        get_model_class.where(args).each do |object|
+
+        PersistenceAdapter.where(self, args).each do |object|
           objects << self.serialize!(object.attributes)
         end
 
@@ -238,8 +242,8 @@ module ActiveRepository
 
       # Updates created_at and updated_at
       def set_timestamps
-        self.created_at = DateTime.now.utc if self.new_record?
-        self.updated_at = DateTime.now.utc
+        self.created_at = DateTime.now.utc if self.respond_to?(:created_at=) && self.created_at.nil?
+        self.updated_at = DateTime.now.utc if self.respond_to?(:updated_at=)
       end
   end
 end

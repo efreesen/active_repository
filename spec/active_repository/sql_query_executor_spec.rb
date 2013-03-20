@@ -51,8 +51,6 @@ describe ActiveRepository, "Base" do
           t.string :monarch
           t.string :language
           t.datetime :founded_at
-          t.datetime :created_at
-          t.datetime :updated_at
         end
       end
 

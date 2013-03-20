@@ -3,12 +3,12 @@ module ActiveRepository #:nodoc:
   module Finders #:nodoc:
     # Defines fiend_by_field methods for the Class
     def define_custom_find_by_field(field_name)
-      method_name = :"find_all_by_#{field_name}"
+      method_name = :"find_by_#{field_name}"
       the_meta_class.instance_eval do
         define_method(method_name) do |*args|
           object = nil
 
-          object = self.find_by_field(field_name.to_sym, args)
+          object = self.where(field_name.to_sym => args).first
 
           object.nil? ? nil : serialize!(object.attributes)
         end
@@ -35,7 +35,7 @@ module ActiveRepository #:nodoc:
         if self == get_model_class
           super(id)
         else
-          object = (id == :all) ? all : get_model_class.find(id)
+          object = (id == :all) ? all : PersistenceAdapter.find(self, id)
 
           serialize!(object)
         end
@@ -51,24 +51,27 @@ module ActiveRepository #:nodoc:
     def find_all_by_field(field_name, args)
       objects = []
 
+      # raise "field: #{field_name}; values: #{args.first.inspect}; all: #{get_model_class.all.inspect}"
+
       if self == get_model_class
         objects = self.where(field_name.to_sym => args.first)
       else
-        if mongoid?
-          objects = get_model_class.where(field_name.to_sym => args.first)
-        else
-          method_name = :"find_all_by_#{field_name}"
-          objects = get_model_class.send(method_name, args)
-        end
+        objects = PersistenceAdapter.where(self, field_name.to_sym => args.first)
+        # if mongoid?
+        #   objects = get_model_class.where(field_name.to_sym => args.first)
+        # else
+        #   method_name = :"find_all_by_#{field_name}"
+        #   objects = get_model_class.send(method_name, args)
+        # end
       end
 
       objects
     end
 
     # Searches first object that matches #field_name field with the #args value(s)
-    def find_by_field(field_name, args)
-      self.find_all_by_field(field_name, args).first.dup
-    end
+    # def find_by_field(field_name, args)
+    #   self.find_all_by_field(field_name, args).first.dup
+    # end
 
     # Searches for an object that has id with #id value, if none is found returns nil
     def find_by_id(id)
@@ -77,13 +80,13 @@ module ActiveRepository #:nodoc:
 
         object.nil? ? nil : object.dup
       else
-        object = nil
+        object = PersistenceAdapter.where(self, :id => id).first
 
-        if mongoid?
-          object = get_model_class.where(:id => id).entries.first
-        else
-          object = get_model_class.find_by_id(id)
-        end
+        # if mongoid?
+        #   object = get_model_class.where(:id => id).entries.first
+        # else
+        #   object = get_model_class.find_by_id(id)
+        # end
 
         object.nil? ? nil : serialize!(object.attributes)
       end
@@ -102,7 +105,7 @@ module ActiveRepository #:nodoc:
     private
     # Returns the object in the position specified in #position
     def get(position)
-      object = get_model_class.send(position)
+      object = PersistenceAdapter.send(position, self)
       object.present? ? serialize!(object.attributes) : nil
     end
   end

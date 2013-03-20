@@ -170,13 +170,13 @@ shared_examples "custom finders" do
     describe "with a match" do
       context "for a non-nil argument" do
         it "returns the first matching record" do
-          Country.find_by_name("US").id.should == 1
+          Country.where(:name => "US").first.id.should == 1
         end
       end
 
       context "for a nil argument" do
         it "returns the first matching record" do
-          Country.find_by_language(nil).id.should == 5
+          Country.where(:language => nil).first.id.should == 5
         end
       end
     end
@@ -452,9 +452,10 @@ shared_examples "#cache_key" do
   it 'should use the record\'s updated_at if present' do
     country = Country.create(:name => "foo")
 
-    id = Country.last.id
+    country.reload
 
     date_string = country.updated_at.nil? ? "" : "-#{country.updated_at.to_s(:number)}"
+    id          = country.id
 
     Country.first.cache_key.should == "countries/#{id}#{date_string}"
   end
