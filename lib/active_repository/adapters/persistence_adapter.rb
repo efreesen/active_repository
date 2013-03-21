@@ -3,52 +3,16 @@ require 'active_repository/adapters/default_adapter'
 require 'active_repository/adapters/mongoid_adapter'
 require 'active_repository/adapters/mongo_mapper_adapter'
 
-begin
-  klass = Module.const_get(Mongoid::Document)
-  unless klass.is_a?(Class)
-    raise "Not defined"
-  end
-rescue
-  module Mongoid
-    module Document
-    end
-  end
-end
-
-begin
-  klass = Module.const_get(DataMapper::Resource)
-  unless klass.is_a?(Class)
-    raise "Not defined"
-  end
-rescue
-  module DataMapper
-    module Resource
-    end
-  end
-end
-
-begin
-  klass = Module.const_get(MongoMapper::Document)
-  unless klass.is_a?(Class)
-    raise "Not defined"
-  end
-rescue
-  module MongoMapper
-    module Document
-    end
-  end
-end
-
 class PersistenceAdapter
   class << self
     def get_adapter(klass)
       klass = klass.get_model_class
-      if klass.included_modules.include?(Mongoid::Document)
+      if klass.included_modules.map(&:to_s).include?("Mongoid::Document")
         MongoidAdapter
-      elsif klass.included_modules.include?(DataMapper::Resource)
+      elsif klass.included_modules.map(&:to_s).include?("DataMapper::Resource")
         DataMapperAdapter
-      elsif klass.included_modules.include?(MongoMapper::Document)
-        adapter = MongoMapperAdapter
+      elsif klass.included_modules.map(&:to_s).include?("MongoMapper::Document")
+        MongoMapperAdapter
       else
         DefaultAdapter
       end

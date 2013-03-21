@@ -291,10 +291,11 @@ shared_examples "is" do
   end
 
   it "attribute is not condition" do
+    id = Country.last.id
     records = Country.where("founded_at is not null")
     records.count.should == 1
-    records.first.id.should == 5
-    records.should == [Country.find(5)]
+    records.first.id.should == id
+    records.should == [Country.find(id)]
   end
 end
 

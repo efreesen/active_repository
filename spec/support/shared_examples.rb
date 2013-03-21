@@ -2,14 +2,16 @@ require 'set'
 
 shared_examples ".update_attributes" do
   it "updates records" do
-    country = Country.find(1)
+    id = Country.first.id
+    country = Country.find(id)
     country.update_attributes(:name => "Italy")
 
     Country.first.name.should == "Italy"
   end
 
   it "must not update id" do
-    country = Country.find(1)
+    id = Country.first.id
+    country = Country.find(id)
 
     country.update_attributes(:id => 45, :name => "Russia")
 
@@ -48,24 +50,30 @@ shared_examples ".where" do
   end
 
   it "populates the data correctly" do
+    first_id = Country.first.id
+    last_id  = Country.all[3].id
+
     records = Country.where(:language => 'English')
-    records.first.id.should == 1
+    records.first.id.should == first_id
     records.first.name.should == "US"
-    records.last.id.should == 4
+    records.last.id.should == last_id
     records.last.name.should == "UK"
   end
 
   it "filters the records from a AR-like conditions hash" do
+    first_id = Country.first.id
+
     record = Country.where(:name => 'US')
     record.count.should == 1
-    record.first.id.should == 1
+    record.first.id.should == first_id
     record.first.name.should == 'US'
   end
 
   it "if id exists, use auto increment id" do
+    first_id = Country.first.id
     country = Country.create(:name => "Russia", :language => 'Russian')
 
-    country.id.should_not == 1
+    country.id.should_not == first_id
   end
 end
 
@@ -91,24 +99,31 @@ end
 
 shared_examples ".first" do
   it "returns the first object" do
-    Country.first.should == Country.find(1)
+    first = Country.first
+
+    first.should == Country.find(first.id)
   end
 end
 
 shared_examples ".last" do
   it "returns the last object" do
-    Country.last.should == Country.find(5)
+    last = Country.last
+
+    last.should == Country.find(last.id)
   end
 end
 
 shared_examples ".find" do
   context "with an id" do
     it "finds the record with the specified id" do
-      Country.find(2).id.should == 2
+      second_id = Country.all[1].id
+      Country.find(second_id).id.should == second_id
     end
 
     it "finds the record with the specified id as a string" do
-      Country.find("2").id.should == 2
+      second_id = Country.all[1].id
+
+      Country.find(second_id.to_s).id.should == second_id
     end
 
     it "raises ActiveHash::RecordNotFound when id not found" do
@@ -130,7 +145,9 @@ shared_examples ".find" do
 
   context "with an array of ids" do
     it "returns all matching ids" do
-      Country.find([1, 3]).should == [Country.find(1), Country.find(3)]
+      countries = Country.all
+      ids = [countries[0].id, countries[2].id]
+      Country.find(ids).should == [Country.find(ids.first), Country.find(ids.last)]
     end
 
     it "raises ActiveHash::RecordNotFound when id not found" do
@@ -144,11 +161,13 @@ end
 shared_examples ".find_by_id" do
   context "with an id" do
     it "finds the record with the specified id" do
-      Country.find_by_id(2).id.should == 2
+      id = Country.all[1].id
+      Country.find_by_id(id).id.should == id
     end
 
     it "finds the record with the specified id as a string" do
-      Country.find_by_id("2").id.should == 2
+      id = Country.all[1].id
+      Country.find_by_id(id.to_s).id.should == id
     end
   end
 
@@ -170,13 +189,15 @@ shared_examples "custom finders" do
     describe "with a match" do
       context "for a non-nil argument" do
         it "returns the first matching record" do
-          Country.where(:name => "US").first.id.should == 1
+          id = Country.first.id
+          Country.where(:name => "US").first.id.should == id
         end
       end
 
       context "for a nil argument" do
         it "returns the first matching record" do
-          Country.where(:language => nil).first.id.should == 5
+          id = Country.all[2].id
+          Country.where(:language => 'Spanish').first.id.should == id
         end
       end
     end
@@ -216,14 +237,16 @@ shared_examples "custom finders" do
   describe "find_by_<field_one>_and_<field_two>" do
     describe "with a match" do
       it "returns the first matching record" do
-        Country.find_by_name_and_language("Canada", "English").id.should == 2
-        Country.find_by_language_and_name("English", "Canada").id.should == 2
+        id = Country.all[1].id
+        Country.find_by_name_and_language("Canada", "English").id.should == id
+        Country.find_by_language_and_name("English", "Canada").id.should == id
       end
     end
 
     describe "with a match based on to_s" do
       it "returns the first matching record" do
-        Country.find_by_name_and_id("Canada", "2").id.should == 2
+        id = Country.all[1].id
+        Country.find_by_name_and_id("Canada", id.to_s).id.should == id
       end
     end
 
@@ -351,8 +374,8 @@ end
 
 shared_examples "#to_param" do
   it "should return id as a string" do
-    id = Country.last.id + 1
-    Country.create(:id => id).to_param.should == id.to_s
+    country = Country.create
+    country.to_param.should == country.id.to_s
   end
 end
 
@@ -431,7 +454,9 @@ shared_examples "#readonly?" do
   end
 
   it "updates a record" do
-    country = Country.find(1)
+    id = Country.first.id
+
+    country = Country.find(id)
 
     country.name = "Germany"
 
@@ -440,7 +465,7 @@ shared_examples "#readonly?" do
     Country.all.size.should == 5
     country.should be_valid
     country.name.should == "Germany"
-    country.id.should == 1
+    country.id.should == id
   end
 end
 
@@ -473,15 +498,15 @@ shared_examples "#save" do
 
   it "adds the new object to the data collection" do
     Country.all.should be_empty
-    country = Country.new :name => "foo", :monarch => nil, :language => nil
-    country.persist.should be_true
+    country = Country.new :name => "foo", :monarch => "King", :language => "bar"
+    country.save.should be_true
     country.reload
 
-    countries_attributes =  Country.all.map(&:attributes)
+    countries_attributes =  Country.first.attributes
     countries_attributes.delete(:created_at)
     countries_attributes.delete(:updated_at)
 
-    expected_attributes = [country].map(&:attributes)
+    expected_attributes = country.attributes
     expected_attributes.delete(:created_at)
     expected_attributes.delete(:updated_at)
 
@@ -524,13 +549,13 @@ shared_examples ".create" do
     countries_attributes.should == expected_attributes
   end
 
-  it "adds an auto-incrementing id if the id is nil" do
+  it "adds an auto-incrementing id if the id is nil and not MongoMapper" do
     country1 = Country.new :name => "foo"
     country1.save
 
     country2 = Country.new :name => "bar"
     country2.save
-    country2.id.should == country1.id + 1
+    country2.id.should == (country1.id.is_a?(BSON::ObjectId) ? country2.id : country1.id + 1)
   end
 
   it "adds the new object to the data collection" do

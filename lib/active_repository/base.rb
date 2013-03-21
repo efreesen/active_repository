@@ -63,9 +63,7 @@ module ActiveRepository
 
     class_attribute :model_class, :save_in_memory, :instance_writer => false
 
-    # attr_accessor :errors
-
-    before_validation :set_timestamps
+    after_validation :set_timestamps
 
     self.save_in_memory = true if self.save_in_memory == nil
 
@@ -242,8 +240,10 @@ module ActiveRepository
 
       # Updates created_at and updated_at
       def set_timestamps
-        self.created_at = DateTime.now.utc if self.respond_to?(:created_at=) && self.created_at.nil?
-        self.updated_at = DateTime.now.utc if self.respond_to?(:updated_at=)
+        if self.errors.empty?
+          self.created_at = DateTime.now.utc if self.respond_to?(:created_at=) && self.created_at.nil?
+          self.updated_at = DateTime.now.utc if self.respond_to?(:updated_at=)
+        end
       end
   end
 end

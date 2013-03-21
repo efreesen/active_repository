@@ -5,7 +5,7 @@ module ActiveRepository
     def create(attributes={})
       object = self.new(attributes)
 
-      if object.valid?
+      if object.present? && object.valid?
         if get_model_class == self
           object.id = nil unless exists?(object.id)
 
