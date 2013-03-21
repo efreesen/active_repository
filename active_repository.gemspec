@@ -35,6 +35,7 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency(%q<rspec>, [">= 2.2.0"])
   gem.add_development_dependency(%q<activerecord>)
   gem.add_development_dependency(%q<mongoid>)
+  gem.add_development_dependency(%q<mongo_mapper>)
   gem.add_development_dependency('rake')
   gem.add_development_dependency(%q<sqlite3>) unless RUBY_PLATFORM == 'java'
   gem.add_development_dependency(%q<jdbc-sqlite3>)  if RUBY_PLATFORM == 'java'
