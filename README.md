@@ -1,6 +1,6 @@
 # ActiveRepository
 
-[![Build Status](https://secure.travis-ci.org/efreesen/active_repository.png)](http://travis-ci.org/efreesen/active_repository)[![Dependency Status](https://gemnasium.com/efreesen/active_repository.png)](https://gemnasium.com/efreesen/active_repository) [![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/efreesen/active_repository)
+[![Build Status](https://secure.travis-ci.org/efreesen/active_repository.png)](http://travis-ci.org/efreesen/active_repository)[![Dependency Status](https://gemnasium.com/efreesen/active_repository.png)](https://gemnasium.com/efreesen/active_repository) [![Code Climate](https://codeclimate.com/github/efreesen/active_repository.png)](https://codeclimate.com/github/efreesen/active_repository)
 
 ActiveRepository was designed so you can build your Business Models without depending on any ORM. It by default saves your data in memory using ActiveHash (https://github.com/zilkey/active_hash). Then when you decide which ORM you want to use you only have to connect ActiveRepository with it.
 
