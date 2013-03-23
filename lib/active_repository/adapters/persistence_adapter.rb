@@ -1,7 +1,6 @@
 require 'active_repository/adapters/active_hash_adapter'
 require 'active_repository/adapters/default_adapter'
 require 'active_repository/adapters/mongoid_adapter'
-require 'active_repository/adapters/mongo_mapper_adapter'
 
 class PersistenceAdapter
   class << self
@@ -11,8 +10,8 @@ class PersistenceAdapter
         MongoidAdapter
       elsif klass.included_modules.map(&:to_s).include?("DataMapper::Resource")
         DataMapperAdapter
-      elsif klass.included_modules.map(&:to_s).include?("MongoMapper::Document")
-        MongoMapperAdapter
+      # elsif klass.included_modules.map(&:to_s).include?("MongoMapper::Document")
+      #   MongoMapperAdapter
       else
         DefaultAdapter
       end

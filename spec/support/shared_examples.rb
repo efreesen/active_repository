@@ -555,7 +555,7 @@ shared_examples ".create" do
 
     country2 = Country.new :name => "bar"
     country2.save
-    country2.id.should == (country1.id.is_a?(BSON::ObjectId) ? country2.id : country1.id + 1)
+    country2.id.should == ((country1.id.class.name == "BSON::ObjectId") ? country2.id : country1.id + 1)
   end
 
   it "adds the new object to the data collection" do

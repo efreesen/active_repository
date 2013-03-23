@@ -170,9 +170,9 @@ module ActiveRepository
 
     # Gathers the persisted object from database and updates self with it's attributes.
     def reload
-      object = self.class.get_model_class.find(self.id)
+      object = self.id.present? ? self.class.get_model_class.find(self.id) : self
 
-      serialize! (self.class.get_model_class.find(self.id) || self).attributes
+      serialize! object.attributes
     end
 
     def save(force=false)
