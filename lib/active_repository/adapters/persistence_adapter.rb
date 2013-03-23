@@ -5,12 +5,12 @@ require 'active_repository/adapters/mongoid_adapter'
 class PersistenceAdapter
   class << self
     def get_adapter(klass)
-      klass = klass.get_model_class
-      if klass.included_modules.map(&:to_s).include?("Mongoid::Document")
+      modules = klass.get_model_class.included_modules.map(&:to_s)
+      if modules.include?("Mongoid::Document")
         MongoidAdapter
-      elsif klass.included_modules.map(&:to_s).include?("DataMapper::Resource")
+      elsif modules.map(&:to_s).include?("DataMapper::Resource")
         DataMapperAdapter
-      # elsif klass.included_modules.map(&:to_s).include?("MongoMapper::Document")
+      # elsif modules.map(&:to_s).include?("MongoMapper::Document")
       #   MongoMapperAdapter
       else
         DefaultAdapter
