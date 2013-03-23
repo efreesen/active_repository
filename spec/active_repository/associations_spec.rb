@@ -2,6 +2,7 @@ require 'spec_helper'
 require 'active_repository'
 require 'active_record'
 require 'mongoid'
+require 'mongo_mapper'
 
 describe ActiveRepository::Base, "associations" do
 
@@ -282,6 +283,9 @@ describe ActiveRepository::Base, "associations" do
 
       Mongoid.load!("support/mongoid.yml", :development)
 
+      MongoMapper.connection = Mongo::Connection.new('localhost', 27017)
+      MongoMapper.database = "sports_betting_engine"
+
       class CityModel
         include Mongoid::Document
         store_in collection: "countries"
@@ -292,6 +296,18 @@ describe ActiveRepository::Base, "associations" do
         City.set_model_class(CityModel)
         City.set_save_in_memory(false)
         belongs_to :state
+        has_many   :regions
+      end
+
+      class RegionModel
+        include MongoMapper::Document
+        key :state_id, String
+      end
+
+      class Region < ActiveRepository::Base
+        Region.set_model_class(RegionModel)
+        Region.set_save_in_memory(false)
+        belongs_to :city
       end
     end
 
@@ -332,6 +348,22 @@ describe ActiveRepository::Base, "associations" do
         city  = City.create(:state_id => state.id)
 
         city.state.should == state
+      end
+
+      it "relates with MongoMapper models" do
+        city   = City.create
+        region = Region.create(:city_id => city.id)
+
+        city.regions.should == [region]
+      end
+    end
+
+    context MongoMapper do
+      it "relates with Mongoid models" do
+        city   = City.create
+        region = Region.create(:city_id => city.id)
+
+        city.regions.should == [region]
       end
     end
   end

@@ -3,9 +3,9 @@ require 'active_repository/adapters/default_adapter'
 class MongoMapperAdapter < DefaultAdapter
   class << self
     def create(klass, attributes)
-      attributes = remove_id(attributes)
+      attributes = clean_attributes_id(remove_id(attributes))
 
-      object = klass.get_model_class.create(attributes)
+      klass.get_model_class.create(attributes)
     end
 
     def exists?(klass, id)
@@ -13,7 +13,7 @@ class MongoMapperAdapter < DefaultAdapter
     end
 
     def where(klass, attributes)
-      new_attributes = {}
+      attributes = clean_attributes_id(attributes)
 
       klass.get_model_class.all(attributes)
     end
@@ -59,6 +59,14 @@ class MongoMapperAdapter < DefaultAdapter
     def remove_id(attributes)
       attributes.delete(:id)
       attributes.delete(:_id)
+      attributes
+    end
+
+    def clean_attributes_id(attributes)
+      attributes.each do |key, value|
+        attributes[key.to_sym] = value.inspect if value.class.name == "Moped::BSON::ObjectId"
+      end
+
       attributes
     end
   end
