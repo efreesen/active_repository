@@ -306,6 +306,13 @@ shared_examples "and" do
     records.first.id.should == 2
     records.should == [Country.find(2), Country.find(4)]
   end
+
+  it "integer attribute and condition" do
+    records = Country.where("id = 2 and language = 'English'")
+    records.count.should == 2
+    records.first.id.should == 2
+    records.should == [Country.find(2), Country.find(4)]
+  end
 end
 
 shared_examples "or" do

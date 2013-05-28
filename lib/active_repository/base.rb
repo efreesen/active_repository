@@ -150,7 +150,7 @@ module ActiveRepository
         super(query)
       else
         objects = []
-        args = args.first.is_a?(Hash) ? args.first : args
+        args = args.first.is_a?(Hash) ? args.first : (args.first.is_a?(Array) ? args.first : args)
 
         PersistenceAdapter.where(self, args).each do |object|
           objects << self.serialize!(object.attributes)

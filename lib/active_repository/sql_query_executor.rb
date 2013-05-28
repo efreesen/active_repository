@@ -7,7 +7,7 @@ module ActiveHash #:nodoc:
         return args.first if args.size == 1
 
         query = args.first
-        param = args.delete(args[1])
+        param = args.delete_at(1)
 
         param = convert_param(param)
 
@@ -24,7 +24,7 @@ module ActiveHash #:nodoc:
         @operator.nil? ? @objects : @objects.send(@operator, execute(klass, @sub_query)).sort_by{ |o| o.id }
       end
 
-      private
+    private
       # Splits the first sub query from the rest of the query and returns it.
       def divide_query
         array = @query.split(" ")
@@ -87,7 +87,7 @@ module ActiveHash #:nodoc:
       # Executes the #sub_quey defined operator filter
       def execute_operator(klass, sub_query)
         klass.all.select do |o|
-          field, attribute = convert_attrs(o.send(sub_query.first), sub_query[2])
+          field, attribute = convert_attrs(o.send(sub_query.first.gsub(/[\(\)]/, "")), sub_query[2])
 
           field.blank? ? false : field.send(@operator, attribute)
         end

@@ -3,6 +3,7 @@ module ActiveRepository
   module Writers
     # Creates an object and persists it.
     def create(attributes={})
+      attributes = attributes.symbolize_keys if attributes.respond_to?(:symbolize_keys)
       object = self.new(attributes)
 
       if object.present? && object.valid?

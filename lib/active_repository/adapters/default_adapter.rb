@@ -45,6 +45,7 @@ class DefaultAdapter
     end
 
     def where(klass, args)
+      # raise args.inspect
       klass.get_model_class.where(args)
     end
   end
