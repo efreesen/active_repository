@@ -4,6 +4,11 @@ class DefaultAdapter
       klass.get_model_class.all
     end
 
+    def delete(klass, id)
+      object = klass.get_model_class.find_by_id(id)
+      object.delete if object
+    end
+
     def delete_all(klass)
       klass.get_model_class.delete_all
     end

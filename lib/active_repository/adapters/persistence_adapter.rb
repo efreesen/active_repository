@@ -25,6 +25,10 @@ class PersistenceAdapter
       get_adapter(klass).create(klass, attributes)
     end
 
+    def delete(klass, id)
+      get_adapter(klass).delete(klass, id)
+    end
+
     def delete_all(klass)
       get_adapter(klass).delete_all(klass)
     end

@@ -183,8 +183,10 @@ module ActiveRepository
           self.id = nil if self.id.nil?
           super
         else
+          object.attributes = self.attributes
           object.save(true)
         end
+
         true
       else
         self.persist

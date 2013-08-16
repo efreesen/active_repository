@@ -631,6 +631,22 @@ shared_examples ".transaction" do
   end
 end
 
+shared_examples "#delete" do
+  before do
+    Country.delete_all
+  end
+
+  it "removes a record" do
+    country = Country.create
+
+    Country.size.should == 1
+
+    country.delete
+
+    Country.size.should == 0
+  end
+end
+
 shared_examples ".delete_all" do
   before do
     Country.delete_all

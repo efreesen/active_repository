@@ -23,13 +23,20 @@ module ActiveHash
       record_id   = record.id.to_s
       record_hash = record.hash
 
-      if self.all.map(&:hash).include?(record_hash)
-        record_index.delete(record_id)
-        self.all.delete(record)
-      end
+      remove(record)
 
       if record_index[record_id].nil? || !self.all.map(&:hash).include?(record_hash)
         insert_record(record)
+      end
+    end
+
+    def self.remove(record)
+      record_id   = record.id.to_s
+      record_hash = record.hash
+
+      if self.all.map(&:hash).include?(record_hash)
+        record_index.delete(record_id)
+        self.all.delete(record)
       end
     end
 
@@ -67,6 +74,14 @@ module ActiveHash
       else
         false
       end
+    end
+
+    def delete
+      record = self.class.find_by_id(self.id)
+
+      self.class.remove(self)
+
+      self.class.find_by_id(self.id).nil?
     end
 
     def to_param

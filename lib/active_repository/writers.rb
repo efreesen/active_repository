@@ -51,6 +51,16 @@ module ActiveRepository
         end
       end
 
+      # Deletes self from the repository.
+      def delete
+        klass = self.class
+        if klass.get_model_class == klass
+          super
+        else
+          PersistenceAdapter.delete(klass, self.id)
+        end
+      end
+
       # Updates #key attribute with #value value.
       def update_attribute(key, value)
         ret = self.valid?
