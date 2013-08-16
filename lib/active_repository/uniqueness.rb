@@ -11,14 +11,11 @@ module ActiveModel
       end
 
       def validate_each(record, attribute, value)
-        finder_class = record.class.get_model_class
-
-        finder_class.all.each do |object|
-          if object.id != record.id && object.send(attribute) == record.send(attribute)
-            record.errors.add(attribute, :taken, options.except(:case_sensitive, :scope, :conditions).merge(:value => value))
-            break
-          end
+        duplicate = record.get_model_class.where("id <> ? and ").select do |object|
+          object.id != record.id && object.send(attribute) == record.send(attribute)
         end
+
+        record.errors.add(attribute, :taken, options.except(:case_sensitive, :scope, :conditions).merge(:value => value)) if duplicate.any?
       end
 
     protected
@@ -39,14 +36,8 @@ module ActiveModel
       end
 
       def build_relation(klass, table, attribute, value) #:nodoc:
-        reflection = klass.reflect_on_association(attribute)
-        if reflection
-          column = klass.columns_hash[reflection.foreign_key]
-          attribute = reflection.foreign_key
-          value = value.attributes[reflection.primary_key_column.name]
-        else
-          column = klass.columns_hash[attribute.to_s]
-        end
+        column, attribute, value = get_reflection_attributes(klass)
+
         value = column.limit ? value.to_s[0, column.limit] : value.to_s if !value.nil? && column.text?
 
         if !options[:case_sensitive] && value && column.text?
@@ -58,6 +49,21 @@ module ActiveModel
         end
 
         relation
+      end
+
+    private
+      def get_reflection_attributes(klass, attribute, value)
+        reflection = klass.reflect_on_association(attribute)
+        column     = klass.columns_hash[reflection.foreign_key]
+
+        if reflection
+          attribute = reflection.foreign_key
+          value = value.attributes[reflection.primary_key_column.name]
+        else
+          column = klass.columns_hash[attribute.to_s]
+        end
+
+        [column, attribute, value]
       end
     end
 

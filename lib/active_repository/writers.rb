@@ -66,7 +66,7 @@ module ActiveRepository
         ret = self.valid?
 
         if ret
-          if self.class == self.class.get_model_class
+          if self.class == get_model_class
             object = self.class.find_or_initialize(:id => self.id)
 
             self.send("#{key}=", value)
@@ -91,7 +91,7 @@ module ActiveRepository
       def update_attributes(attributes)
         ret = true
         klass       = self.class
-        model_class = self.class.get_model_class
+        model_class = get_model_class
 
         if klass == model_class
           attributes.each do |key, value|

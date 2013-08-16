@@ -32,7 +32,7 @@ module ActiveRepository #:nodoc:
     # Searches for a object containing the id in #id
     def find(id)
       begin
-        if self == get_model_class
+        if repository?
           super(id)
         else
           object = (id == :all) ? all : PersistenceAdapter.find(self, id)
@@ -53,7 +53,7 @@ module ActiveRepository #:nodoc:
 
       # raise "field: #{field_name}; values: #{args.first.inspect}; all: #{get_model_class.all.inspect}"
 
-      if self == get_model_class
+      if repository?
         objects = self.where(field_name.to_sym => args.first)
       else
         objects = PersistenceAdapter.where(self, field_name.to_sym => args.first)
@@ -75,7 +75,7 @@ module ActiveRepository #:nodoc:
 
     # Searches for an object that has id with #id value, if none is found returns nil
     def find_by_id(id)
-      if self == get_model_class
+      if repository?
         object = super(id)
 
         object.nil? ? nil : object.dup
@@ -94,12 +94,12 @@ module ActiveRepository #:nodoc:
 
     # Returns first persisted object
     def first
-      self == get_model_class ? super : get(:first)
+      repository? ? super : get(:first)
     end
 
     # Returns last persisted object
     def last
-      self == get_model_class ? super : get(:last)
+      repository? ? super : get(:last)
     end
 
     private

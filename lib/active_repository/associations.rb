@@ -5,16 +5,13 @@
 
 module ActiveRepository
   module Associations
-
     #:nodoc:
     module ActiveRecordExtensions
-
-      
       # Defines belongs to type relation between ActiveRepository objects and ActivRecord Models.
       def belongs_to_active_repository(association_id, options = {})
         options = {
-          :class_name => association_id.to_s.classify,
-          :foreign_key => association_id.to_s.foreign_key
+          class_name:  association_id.to_s.classify,
+          foreign_key: association_id.to_s.foreign_key
         }.merge(options)
 
         define_method(association_id) do
@@ -30,9 +27,8 @@ module ActiveRepository
             association_id.to_sym,
             options,
             options[:class_name].constantize
-            )
+          )
       end
-
     end
 
     #:nodoc:
@@ -46,8 +42,8 @@ module ActiveRepository
       def has_many(association_id, options = {})
         define_method(association_id) do
           options = {
-            :class_name => association_id.to_s.classify,
-            :foreign_key => self.class.to_s.foreign_key
+            class_name:  association_id.to_s.classify,
+            foreign_key: self.class.to_s.foreign_key
           }.merge(options)
 
           klass = options[:class_name].constantize
@@ -65,8 +61,8 @@ module ActiveRepository
       def has_one(association_id, options = {})
         define_method(association_id) do
           options = {
-            :class_name => association_id.to_s.classify,
-            :foreign_key => self.class.to_s.foreign_key
+            class_name:  association_id.to_s.classify,
+            foreign_key: self.class.to_s.foreign_key
           }.merge(options)
 
           scope = options[:class_name].constantize
@@ -74,6 +70,7 @@ module ActiveRepository
           if scope.respond_to?(:scoped) && options[:conditions]
             scope = scope.scoped(:conditions => options[:conditions])
           end
+          
           scope.send("find_by_#{options[:foreign_key]}", id)
         end
       end
@@ -81,8 +78,8 @@ module ActiveRepository
       # Defines "belongs to" type relation between ActiveRepository objects
       def belongs_to(association_id, options = {})
         options = {
-          :class_name => association_id.to_s.classify,
-          :foreign_key => association_id.to_s.foreign_key
+          class_name:  association_id.to_s.classify,
+          foreign_key: association_id.to_s.foreign_key
         }.merge(options)
 
         field options[:foreign_key].to_sym
@@ -102,9 +99,7 @@ module ActiveRepository
           attributes.delete(association_id.to_sym)
           send("#{options[:foreign_key]}=", (new_value.try(:id) ? new_value.id : new_value))
         end
-
       end
     end
-
   end
 end

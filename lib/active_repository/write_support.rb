@@ -94,7 +94,7 @@ module ActiveHash
     end
 
     def eql?(other)
-      (other.instance_of?(self.class) || other.instance_of?(self.class.get_model_class)) && id.present? && (id == other.id) && (!self.respond_to?(:created_at) || (created_at == other.created_at))
+      (other.instance_of?(self.class) || other.instance_of?(get_model_class)) && id.present? && (id == other.id) && (!self.respond_to?(:created_at) || (created_at == other.created_at))
     end
 
     alias == eql?

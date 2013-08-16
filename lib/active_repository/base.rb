@@ -69,8 +69,7 @@ module ActiveRepository
 
     # Returns all persisted objects
     def self.all
-      (self == get_model_class ? super : PersistenceAdapter.all(self).map { |object| serialize!(object.attributes) })
-      # self == get_model_class ? super : get_model_class.all.map { |object| serialize!(object.attributes) }
+      (repository? ? super : PersistenceAdapter.all(self).map { |object| serialize!(object.attributes) })
     end
 
     # Constantize class name
@@ -80,21 +79,12 @@ module ActiveRepository
 
     # Deletes all persisted objects
     def self.delete_all
-      self == get_model_class ? super : PersistenceAdapter.delete_all(self)
+      repository? ? super : PersistenceAdapter.delete_all(self)
     end
 
     # Checks the existence of a persisted object with the specified id
     def self.exists?(id)
-      self == get_model_class ? find_by_id(id).present? : PersistenceAdapter.exists?(self, id)
-      # if self == get_model_class
-      #   !find_by_id(id).nil?
-      # else
-      #   if mongoid?
-      #     find_by_id(id).present?
-      #   else
-      #     get_model_class.exists?(id)
-      #   end
-      # end
+      repository? ? find_by_id(id).present? : PersistenceAdapter.exists?(self, id)
     end
 
     # Returns the Class responsible for persisting the objects
@@ -122,7 +112,7 @@ module ActiveRepository
     def self.set_model_class(value)
       self.model_class = value if model_class.nil?
 
-      self.set_save_in_memory(self.model_class == self)
+      self.set_save_in_memory(repository?)
 
       field_names.each do |field_name|
         define_custom_find_by_field(field_name)
@@ -145,19 +135,20 @@ module ActiveRepository
     #   * RelatedClass.where("name = 'Peter'")
     def self.where(*args)
       raise ArgumentError.new("wrong number of arguments (0 for 1)") if args.empty?
-      if self == get_model_class
-        query = ActiveHash::SQLQueryExecutor.args_to_query(args)
-        super(query)
-      else
-        objects = []
-        args = args.first.is_a?(Hash) ? args.first : (args.first.is_a?(Array) ? args.first : args)
 
-        PersistenceAdapter.where(self, args).each do |object|
-          objects << self.serialize!(object.attributes)
+      if repository?
+        super(ActiveHash::SQLQueryExecutor.args_to_query(args))
+      else
+        objects = PersistenceAdapter.where(self, sanitize_args(args)).map do |object|
+          self.serialize!(object.attributes)
         end
 
         objects
       end
+    end
+
+    def get_model_class
+      self.class.get_model_class
     end
 
     # Persists the object using the class defined on the model_class attribute, if none defined it 
@@ -170,14 +161,14 @@ module ActiveRepository
 
     # Gathers the persisted object from database and updates self with it's attributes.
     def reload
-      object = self.id.present? ? self.class.get_model_class.find(self.id) : self
+      object = self.id.present? ? get_model_class.find(self.id) : self
 
       serialize! object.attributes
     end
 
     def save(force=false)
-      if self.class == self.class.get_model_class
-        object = self.class.get_model_class.find(self.id)
+      if self.class == get_model_class
+        object = get_model_class.find(self.id)
 
         if force || self.id.nil?
           self.id = nil if self.id.nil?
@@ -206,10 +197,10 @@ module ActiveRepository
       # Find related object on the database and updates it with attributes in self, if it didn't
       # find it on database it creates a new one.
       def convert(attribute="id")
-        klass = self.class.get_model_class
+        klass = get_model_class
         object = klass.where(attribute.to_sym => self.send(attribute)).first
 
-        object ||= self.class.get_model_class.new
+        object ||= get_model_class.new
 
         attributes = self.attributes
 
@@ -224,15 +215,23 @@ module ActiveRepository
         object
       end
 
-      # Returns the value of the model_class attribute.
-      def model_class
-        self.model_class
-      end
-
     private
+
       # Checks if model_class is a Mongoid model
       def self.mongoid?
         get_model_class.included_modules.include?(Mongoid::Document)
+      end
+
+      def self.repository?
+        self == get_model_class
+      end
+
+      def self.sanitize_args(args)
+        args.first.is_a?(Hash) ? args.first : (args.first.is_a?(Array) ? args.first : args)
+      end
+
+      def repository?
+        self.class.repository?
       end
 
       # Checks if model_class is a Mongoid model
