@@ -18,6 +18,14 @@ shared_examples ".update_attributes" do
     Country.first.name.should == "Russia"
     Country.first.id.should_not == 45
   end
+
+  it "updates records whit string keys" do
+    id = Country.first.id
+    country = Country.find(id)
+    country.update_attributes('name' => "Germany")
+
+    Country.first.name.should == "Germany"
+  end
 end
 
 shared_examples ".all" do

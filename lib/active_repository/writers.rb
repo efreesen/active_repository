@@ -32,11 +32,11 @@ module ActiveRepository
     end
 
     def find_or_initialize(attributes)
-      object = where(attributes).first
-      object = self.new(attributes) if object.nil?
+      attributes = attributes.symbolize_keys if attributes.respond_to?(:symbolize_keys)
+      object     = where(attributes).first || self.new(attributes)
 
       attributes.each do |key, value|
-        object.send("#{key.to_sym}=", value)
+        object.send("#{key}=", value)
       end
 
       serialize!(object.attributes)
@@ -64,6 +64,7 @@ module ActiveRepository
       # Updates #key attribute with #value value.
       def update_attribute(key, value)
         ret = self.valid?
+        key = key.to_sym
 
         if ret
           if self.class == get_model_class
@@ -89,7 +90,8 @@ module ActiveRepository
 
       # Updates attributes in self with the attributes in the parameter
       def update_attributes(attributes)
-        ret = true
+        ret         = true
+        attributes  = attributes.symbolize_keys if attributes.respond_to?(:symbolize_keys)
         klass       = self.class
         model_class = get_model_class
 
