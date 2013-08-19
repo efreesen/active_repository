@@ -36,6 +36,7 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency(%q<activerecord>, [">= 3.2.6"])
   gem.add_development_dependency(%q<mongoid>, [">= 3.0.11"])
   gem.add_development_dependency('rake', [">= 10.0.0"])
+  gem.add_development_dependency('coveralls')
   gem.add_development_dependency(%q<sqlite3>) unless RUBY_PLATFORM == 'java'
   gem.add_development_dependency(%q<jdbc-sqlite3>)  if RUBY_PLATFORM == 'java'
   gem.add_development_dependency(%q<jruby-openssl>)  if RUBY_PLATFORM == 'java'
