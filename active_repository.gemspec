@@ -13,7 +13,7 @@ Gem::Specification.new do |gem|
   gem.name          = "active_repository"
   gem.require_paths = ["lib"]
   gem.version       = ActiveRepository::VERSION
-  gem.license       = "MIT"
+  gem.license       = "GPL"
   gem.files         = [
     "LICENSE",
     "README.md",

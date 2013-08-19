@@ -1,7 +1,7 @@
 # Defines the relations between ActiveRepository objects and/or ActiveRecord Models.
 #
 # Author::    Caio Torres  (mailto:efreesen@gmail.com)
-# License::   MIT
+# License::   GPL
 
 module ActiveRepository
   module Associations

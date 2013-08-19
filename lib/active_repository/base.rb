@@ -51,7 +51,7 @@ module ActiveRepository
   #    end
   #
   # Author::    Caio Torres (mailto:efreesen@gmail.com)
-  # License::   MIT
+  # License::   GPL
   class Base < ActiveHash::Base
     extend ActiveModel::Callbacks
     extend ActiveRepository::Finders
