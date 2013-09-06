@@ -63,34 +63,28 @@ module ActiveRepository
 
       # Updates #key attribute with #value value.
       def update_attribute(key, value)
-        ret = self.valid?
+        ret = true
         key = key.to_sym
 
-        if ret
-          if self.class == get_model_class
-            object = self.class.find_or_initialize(:id => self.id)
+        if self.class == get_model_class
+          object = self.class.find_or_initialize(:id => self.id)
 
-            self.send("#{key}=", value)
+          self.send("#{key}=", value)
 
-            ret = save
-          else
-            # key = (key.to_s == 'id' ? '_id' : key.to_s) if mongoid?
+          ret = self.save
+        else
+          ret, object = PersistenceAdapter.update_attribute(self.class, self.id, key, value)
 
-            ret, object = PersistenceAdapter.update_attribute(self.class, self.id, key, value)
-
-            self.attributes = object.attributes
-            # object.update_attribute(key,value)
-          end
-
-          reload
+          self.attributes = object.attributes
         end
+
+        reload
 
         ret
       end
 
       # Updates attributes in self with the attributes in the parameter
       def update_attributes(attributes)
-        ret         = true
         attributes  = attributes.symbolize_keys if attributes.respond_to?(:symbolize_keys)
         klass       = self.class
         model_class = get_model_class
@@ -105,12 +99,10 @@ module ActiveRepository
           ret, object = PersistenceAdapter.update_attributes(self.class, self.id, attributes)
 
           self.attributes = object.attributes
-          # object = self.id.nil? ? model_class.new : model_class.find(self.id)
-
-          # ret = object.update_attributes(attributes)
         end
 
         reload
+
         ret
       end
     end

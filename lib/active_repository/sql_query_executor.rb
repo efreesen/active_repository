@@ -19,7 +19,7 @@ module ActiveHash #:nodoc:
       # Recursive method that divides the query in sub queries, executes each part individually
       # and finally relates its results as specified in the query.
       def execute(klass, query)
-        @operator, @sub_query, @objects = process_first(klass, query, query.split(" ")[1])
+        @operator, @sub_query, @objects = process_first(klass, query, query.split(" ")[1].downcase)
 
         @operator.nil? ? @objects : @objects.send(@operator, execute(klass, @sub_query)).sort_by{ |o| o.id }
       end
@@ -32,7 +32,7 @@ module ActiveHash #:nodoc:
         when "between"
           array[0..5]
         when "is"
-          size = array[2].downcase == "not" ? 4 : 3
+          size = array[2] == "not" ? 4 : 3
           array[0..size]
         else
           array[0..3]
@@ -43,7 +43,7 @@ module ActiveHash #:nodoc:
       # split into separate components of the query.
       def convert_attrs(field, *attrs)
         attrs.each_with_index do |attribute, i|
-          attribute = attribute.gsub("_", " ")
+          attribute = attribute.gsub("_", " ") rescue attribute
           attrs[i] = field.is_a?(Integer) ? attribute.to_i : attribute
         end
 
@@ -69,7 +69,8 @@ module ActiveHash #:nodoc:
       # Execute SQL between filter
       def execute_between(klass, sub_query)
         klass.all.select do |o|
-          field, first_attr, second_attr = convert_attrs(o.send(sub_query.first), sub_query[2], sub_query[4])
+          field = sub_query.first.gsub('(', '')
+          field, first_attr, second_attr = convert_attrs(o.send(field), sub_query[2], sub_query[4])
 
           (field >= first_attr && field <= second_attr)
         end
@@ -87,9 +88,15 @@ module ActiveHash #:nodoc:
       # Executes the #sub_quey defined operator filter
       def execute_operator(klass, sub_query)
         klass.all.select do |o|
-          field, attribute = convert_attrs(o.send(sub_query.first.gsub(/[\(\)]/, "")), sub_query[2])
+          query = sub_query.first
 
-          field.blank? ? false : field.send(@operator, attribute)
+          if query
+            field, attribute = convert_attrs(o.send(query.gsub(/[\(\)]/, "")), sub_query[2])
+
+            field.blank? ? false : field.send(@operator, attribute)
+          else
+            false
+          end
         end
       end
 
@@ -109,7 +116,7 @@ module ActiveHash #:nodoc:
       def get_operator(attributes)
         operator = attributes.size >= 4 ? attributes.last : nil
 
-        case operator
+        case operator.try(:downcase)
         when "or"  then "+"
         when "and" then "&"
         else nil
@@ -118,7 +125,7 @@ module ActiveHash #:nodoc:
 
       # Processes the first sub query in query
       def process_first(klass, query, operator)
-        @operator = operator == "=" ? "==" : operator
+        @operator = (operator == "=" ? "==" : (operator == '<>' ? '!=' : operator))
         @query    = sanitize_query(query)
         sub_query = divide_query
 
@@ -126,7 +133,9 @@ module ActiveHash #:nodoc:
 
         objects = execute_sub_query(klass, sub_query)
 
-        sub_query = query.gsub(sub_query.join(" "), "")
+        query_array = query.split(' ')
+
+        sub_query = query_array[sub_query.size..query_array.size].join(' ')
 
         [binding_operator, sub_query, objects]
       end

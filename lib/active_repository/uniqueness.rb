@@ -11,7 +11,7 @@ module ActiveModel
       end
 
       def validate_each(record, attribute, value)
-        duplicate = record.get_model_class.where("id <> ? and ").select do |object|
+        duplicate = record.get_model_class.where("id != ?", record.id).select do |object|
           object.id != record.id && object.send(attribute) == record.send(attribute)
         end
 

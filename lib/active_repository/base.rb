@@ -137,6 +137,7 @@ module ActiveRepository
       raise ArgumentError.new("wrong number of arguments (0 for 1)") if args.empty?
 
       if repository?
+        args = args.first if args.try(:first).is_a?(Array)
         super(ActiveHash::SQLQueryExecutor.args_to_query(args))
       else
         objects = PersistenceAdapter.where(self, sanitize_args(args)).map do |object|
@@ -173,12 +174,12 @@ module ActiveRepository
         if force || self.id.nil?
           self.id = nil if self.id.nil?
           super
-        else
+        elsif self.valid?
           object.attributes = self.attributes
           object.save(true)
         end
 
-        true
+        self.valid?
       else
         self.persist
       end
