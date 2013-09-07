@@ -19,6 +19,8 @@ module ActiveHash #:nodoc:
       # Recursive method that divides the query in sub queries, executes each part individually
       # and finally relates its results as specified in the query.
       def execute(klass, query)
+        query = query.gsub(/\[.*?\]/) { |substr| substr.gsub(' ', '') }
+
         @operator, @sub_query, @objects = process_first(klass, query, query.split(" ")[1].downcase)
 
         @operator.nil? ? @objects : @objects.send(@operator, execute(klass, @sub_query)).sort_by{ |o| o.id }
@@ -85,6 +87,16 @@ module ActiveHash #:nodoc:
         end
       end
 
+      # Executes SQL is filter
+      def execute_in(klass, sub_query)
+        klass.all.select do |o|
+          field = o.send(sub_query.first)
+          values = sub_query[2].gsub(/\(|\[|\]|\)/, '').split(/,|, /)
+          
+          values.include?(field.to_s)
+        end
+      end
+
       # Executes the #sub_quey defined operator filter
       def execute_operator(klass, sub_query)
         klass.all.select do |o|
@@ -107,6 +119,8 @@ module ActiveHash #:nodoc:
           execute_between(klass, sub_query)
         when "is"
           execute_is(klass, sub_query)
+        when "in"
+          execute_in(klass, sub_query)
         else
           execute_operator(klass, sub_query)
         end
