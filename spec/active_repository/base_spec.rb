@@ -16,7 +16,7 @@ describe ActiveRepository, "Base" do
     Object.send :remove_const, :Country
   end
 
-  context "in_memory" do
+  context "in_memory", :in_memory do
     before do
       Country.fields :name, :monarch, :language, :created_at, :updated_at
       Country.set_model_class(Country)
@@ -60,7 +60,7 @@ describe ActiveRepository, "Base" do
     it_behaves_like '.delete_all'
   end
 
-  context "active_record" do
+  context "active_record", :active_record do
     before do
       Country.fields :name, :monarch, :language, :created_at, :updated_at
 
@@ -121,7 +121,7 @@ describe ActiveRepository, "Base" do
     it_behaves_like '.delete_all'
   end
 
-  context "mongoid" do
+  context "mongoid", :mongoid do
     before do
       Country.fields :name, :monarch, :language, :created_at, :updated_at
 
@@ -135,7 +135,7 @@ describe ActiveRepository, "Base" do
         field :name
         field :monarch
         field :language
-        field :_id, type: Integer, default: -> { CountryModel.last ? CountryModel.last.id + 1 : 1 }
+        field :id, type: Integer
         field :updated_at
         field :created_at
       end

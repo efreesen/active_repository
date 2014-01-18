@@ -1,7 +1,7 @@
 require 'active_repository/associations'
 require 'active_repository/uniqueness'
 require 'active_repository/write_support'
-require 'active_repository/sql_query_executor'
+require 'sql_query_executor'
 require 'active_repository/finders'
 require 'active_repository/writers'
 require 'active_repository/adapters/persistence_adapter'
@@ -138,7 +138,8 @@ module ActiveRepository
 
       if repository?
         args = args.first if args.try(:first).is_a?(Array)
-        super(ActiveHash::SQLQueryExecutor.args_to_query(args))
+        query_executor = SqlQueryExecutor::Base.new(all)
+        query_executor.where(args)
       else
         objects = PersistenceAdapter.where(self, sanitize_args(args)).map do |object|
           self.serialize!(object.attributes)
@@ -188,7 +189,10 @@ module ActiveRepository
     # Updates attributes from self with the attributes from the parameters
     def serialize!(attributes)
       unless attributes.nil?
-        self.attributes = attributes
+        attributes.each do |key, value|
+          key = "id" if key == "_id"
+          self.send("#{key}=", (value.dup rescue value))
+        end
       end
 
       self.dup

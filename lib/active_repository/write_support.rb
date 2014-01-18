@@ -1,5 +1,5 @@
 require 'active_hash'
-require 'active_repository/sql_query_executor'
+require 'sql_query_executor'
 
 # Changes made in order to make write support in ActiveHash.
 
