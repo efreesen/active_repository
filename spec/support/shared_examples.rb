@@ -141,16 +141,6 @@ shared_examples ".find" do
     end
   end
 
-  context "with :all" do
-    it "returns all records" do
-      records = Country.find(:all)
-
-      records.should include(Country.first)
-      records.should include(Country.last)
-      records.size.should == 5
-    end
-  end
-
   context "with an array of ids" do
     it "returns all matching ids" do
       countries = Country.all

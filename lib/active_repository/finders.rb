@@ -7,9 +7,7 @@ module ActiveRepository #:nodoc:
         if repository?
           super(id)
         else
-          object = (id == :all) ? all : PersistenceAdapter.find(self, id)
-
-          serialize!(object)
+          serialize!(PersistenceAdapter.find(self, id))
         end
       rescue Exception => e
         message = "Couldn't find #{self} with ID=#{id}"
