@@ -18,6 +18,8 @@ class DefaultAdapter
     end
 
     def find(klass, id)
+      id = normalize_id(id) if id
+
       klass.get_model_class.find(id)
     end
 
@@ -50,8 +52,21 @@ class DefaultAdapter
     end
 
     def where(klass, args)
-      # raise args.inspect
+      args[:id] = normalize_id(args) if args[:id]
       klass.get_model_class.where(args)
+    end
+
+  private
+    def normalize_id(args)
+      return args if args.is_a?(Array)
+      
+      id = (args.is_a?(Hash) ? args[:id] : args)
+
+      convertable?(id) ? id.to_i : id
+    end
+
+    def convertable?(id)
+      id.respond_to?(:to_i) && id.to_s == id.to_i.to_s
     end
   end
 end
