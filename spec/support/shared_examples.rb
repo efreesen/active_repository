@@ -1,4 +1,5 @@
 require 'set'
+require 'pry'
 
 shared_examples ".update_attributes" do
   it "updates records" do
@@ -7,16 +8,6 @@ shared_examples ".update_attributes" do
     country.update_attributes(:name => "Italy")
 
     Country.first.name.should == "Italy"
-  end
-
-  it "must not update id" do
-    id = Country.first.id
-    country = Country.find(id)
-
-    country.update_attributes(:id => 45, :name => "Russia")
-
-    Country.first.name.should == "Russia"
-    Country.first.id.should_not == 45
   end
 
   it "updates records whit string keys" do
