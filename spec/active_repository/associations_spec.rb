@@ -252,6 +252,9 @@ describe ActiveRepository::Base, "associations" do
     end
 
     after do
+      City.delete_all
+      State.delete_all
+
       Object.send :remove_const, :CityModel
       Object.send :remove_const, :State
       Object.send :remove_const, :StateModel
@@ -277,6 +280,7 @@ describe ActiveRepository::Base, "associations" do
       it "relates with Mongoid models" do
         state = State.create
         city  = City.create(:state_id => state.id)
+
 
         state.cities.should == [city]
       end
