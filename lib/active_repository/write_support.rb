@@ -65,7 +65,7 @@ module ActiveHash
 
     def save(*args)
       if self.valid?
-        record = self.class.find_by_id(self.id)
+        record = self.class.find_by(id: self.id)
 
         self.class.insert(self) if record.nil? && record != self
 
@@ -77,11 +77,11 @@ module ActiveHash
     end
 
     def delete
-      record = self.class.find_by_id(self.id)
+      record = self.class.find_by(id: self.id)
 
       self.class.remove(self)
 
-      self.class.find_by_id(self.id).nil?
+      self.class.find_by(id: self.id).nil?
     end
 
     def to_param
@@ -89,7 +89,7 @@ module ActiveHash
     end
 
     def persisted?
-      other = self.class.find_by_id(id)
+      other = self.class.find_by(id: id)
       other.present?
     end
 

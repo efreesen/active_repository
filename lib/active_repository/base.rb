@@ -84,13 +84,29 @@ module ActiveRepository
 
     # Checks the existence of a persisted object with the specified id
     def self.exists?(id)
-      repository? ? find_by_id(id).present? : PersistenceAdapter.exists?(self, id)
+      repository? ? find_by(id: id).present? : PersistenceAdapter.exists?(self, id)
     end
 
     # Returns the Class responsible for persisting the objects
     def self.get_model_class
       return self if self.model_class.nil? || self.save_in_memory?
       save_in_memory? ? self : self.model_class
+    end
+
+    # Searches all objects that matches #field_name field with the #args value(s)
+    def self.find_by(args)
+      raise ArgumentError("Argument must be a Hash") unless args.is_a?(Hash)
+
+      objects = where(args)
+
+      objects.first
+    end
+
+    # Searches all objects that matches #field_name field with the #args value(s)
+    def self.find_by!(args)
+      object = find_by(args)
+
+      raise ActiveHash::RecordNotFound unless object
     end
 
     # Converts Persisted object(s) to it's ActiveRepository counterpart
@@ -113,11 +129,6 @@ module ActiveRepository
       self.model_class = value if model_class.nil?
 
       self.set_save_in_memory(repository?)
-
-      field_names.each do |field_name|
-        define_custom_find_by_field(field_name)
-        define_custom_find_all_by_field(field_name)
-      end
     end
 
     # Sets the class attribute save_in_memory, set it to true to ignore model_class attribute

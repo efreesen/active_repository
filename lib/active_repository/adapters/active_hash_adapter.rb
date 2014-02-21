@@ -9,7 +9,7 @@ class ActiveHashAdapter
     end
 
     def exists?(id)
-      @klass.find_by_id(id).present?
+      @klass.find_by(id: id).present?
     end
 
     def where(*args)

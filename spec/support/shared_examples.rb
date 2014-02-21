@@ -166,28 +166,28 @@ shared_examples ".find" do
   end
 end
 
-shared_examples ".find_by_id" do
+shared_examples ".find_by id" do
   context "with an id" do
     it "finds the record with the specified id" do
       id = Country.all[1].id
-      Country.find_by_id(id).id.should == id
+      Country.find_by(id: id).id.should == id
     end
 
     it "finds the record with the specified id as a string" do
       id = Country.all[1].id
-      Country.find_by_id(id.to_s).id.should == id
+      Country.find_by(id: id.to_s).id.should == id
     end
   end
 
   context "with nil" do
     it "returns nil" do
-      Country.find_by_id(nil).should be_nil
+      Country.find_by(id: nil).should be_nil
     end
   end
 
   context "with an id not present" do
     it "returns nil" do
-      Country.find_by_id(4567).should be_nil
+      Country.find_by(id: 4567).should be_nil
     end
   end
 end

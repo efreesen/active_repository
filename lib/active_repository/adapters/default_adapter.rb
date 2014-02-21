@@ -5,7 +5,7 @@ class DefaultAdapter
     end
 
     def delete(klass, id)
-      object = klass.get_model_class.find_by_id(id)
+      object = klass.get_model_class.find_by(id: id)
       object.delete if object
     end
 
