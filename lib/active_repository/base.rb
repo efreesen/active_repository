@@ -145,10 +145,10 @@ module ActiveRepository
     #   * RelatedClass.where(:name => "Peter")
     #   * RelatedClass.where("name = 'Peter'")
     def self.where(*args)
-      raise ArgumentError.new("wrong number of arguments (0 for 1)") if args.empty?
+      raise ArgumentError.new("must pass at least one argument") if args.empty?
 
       if repository?
-        args = args.first if args.try(:first).is_a?(Array)
+        args = args.first if args.respond_to?(:size) && args.size == 1
         query_executor = SqlQueryExecutor::Base.new(all)
         query_executor.where(args)
       else
