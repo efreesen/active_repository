@@ -114,7 +114,7 @@ module ActiveRepository
       case other.class.to_s
       when "Hash", "ActiveSupport::HashWithIndifferentAccess" then self.new.serialize!(other)
       when "Array"                                            then other.map { |o| serialize!(o.attributes) }
-      when "Moped::BSON::Document"                            then self.new.serialize!(other)
+      when "Moped::BSON::Document", "BSON::Document"          then self.new.serialize!(other)
       else self.new.serialize!(other.attributes)
       end
     end
