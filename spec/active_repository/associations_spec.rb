@@ -79,13 +79,13 @@ describe ActiveRepository::Base, "associations" do
       it "find the correct records" do
         City.has_many :authors
         city = City.create :id => 1
-        city.authors.should == [@included_author_1, @included_author_2]
+        city.authors.all.should == [@included_author_1, @included_author_2]
       end
 
       it "uses the correct class name when passed" do
         City.has_many :writers, :class_name => "Author"
         city = City.create :id => 1
-        city.writers.should == [@included_author_1, @included_author_2]
+        city.writers.all.should == [@included_author_1, @included_author_2]
       end
     end
 
@@ -265,7 +265,7 @@ describe ActiveRepository::Base, "associations" do
         country = Country.create
         state   = State.create(:country_id => country.id)
 
-        country.states.should == [state]
+        country.states.all.should == [state]
       end
     end
 
@@ -282,7 +282,7 @@ describe ActiveRepository::Base, "associations" do
         city  = City.create(:state_id => state.id)
 
 
-        state.cities.should == [city]
+        state.cities.all.should == [city]
       end
     end
 

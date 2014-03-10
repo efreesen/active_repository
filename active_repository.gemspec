@@ -24,13 +24,14 @@ Gem::Specification.new do |gem|
     "Gemfile",
     "spec/active_repository/base_spec.rb",
     "spec/active_repository/associations_spec.rb",
+    "spec/active_repository/result_set_spec.rb",
     "spec/support/shared_examples.rb",
     "spec/spec_helper.rb"
   ]
 
   gem.add_runtime_dependency(%q<active_hash>, [">= 1.2.3"])
   gem.add_runtime_dependency(%q<activemodel>, [">= 3.2"])
-  gem.add_runtime_dependency(%q<sql_query_executor>, [">= 0.1.2"])
+  gem.add_runtime_dependency(%q<sql_query_executor>, [">= 0.3.1"])
   gem.add_development_dependency(%q<pry>)
   gem.add_development_dependency(%q<rspec>, [">= 2.2.0"])
   gem.add_development_dependency(%q<activerecord>, [">= 3.2"])

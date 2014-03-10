@@ -29,6 +29,9 @@ describe ActiveRepository, "Base" do
       Country.create(:id => 5, :name => "Brazil")
     end
 
+    it_behaves_like '.constantize'
+    it_behaves_like '.serialized_attributes'
+    it_behaves_like '.update_attribute'
     it_behaves_like '.update_attributes'
     it_behaves_like '.all'
     it_behaves_like '.where'
@@ -37,7 +40,8 @@ describe ActiveRepository, "Base" do
     it_behaves_like '.first'
     it_behaves_like '.last'
     it_behaves_like '.find'
-    it_behaves_like '.find_by id'
+    it_behaves_like '.find_by'
+    it_behaves_like '.find_by!'
     it_behaves_like 'custom finders'
     it_behaves_like '#method_missing'
     it_behaves_like '#attributes'
@@ -58,6 +62,7 @@ describe ActiveRepository, "Base" do
     it_behaves_like '#new_record?'
     it_behaves_like '.transaction'
     it_behaves_like '.delete_all'
+    it_behaves_like '#delete'
   end
 
   context "active_record", :active_record do
@@ -90,6 +95,9 @@ describe ActiveRepository, "Base" do
       Object.send :remove_const, :CountryModel
     end
 
+    it_behaves_like '.constantize'
+    it_behaves_like '.serialized_attributes'
+    it_behaves_like '.update_attribute'
     it_behaves_like '.update_attributes'
     it_behaves_like '.all'
     it_behaves_like '.where'
@@ -98,7 +106,8 @@ describe ActiveRepository, "Base" do
     it_behaves_like '.first'
     it_behaves_like '.last'
     it_behaves_like '.find'
-    it_behaves_like '.find_by id'
+    it_behaves_like '.find_by'
+    it_behaves_like '.find_by!'
     it_behaves_like 'custom finders'
     it_behaves_like '#method_missing'
     it_behaves_like '#attributes'
@@ -119,6 +128,7 @@ describe ActiveRepository, "Base" do
     it_behaves_like '#new_record?'
     it_behaves_like '.transaction'
     it_behaves_like '.delete_all'
+    it_behaves_like '#delete'
   end
 
   context "mongoid", :mongoid do
@@ -156,6 +166,9 @@ describe ActiveRepository, "Base" do
       Object.send :remove_const, :CountryModel
     end
 
+    it_behaves_like '.constantize'
+    it_behaves_like '.serialized_attributes'
+    it_behaves_like '.update_attribute'
     it_behaves_like '.update_attributes'
     it_behaves_like '.all'
     it_behaves_like '.where'
@@ -164,7 +177,8 @@ describe ActiveRepository, "Base" do
     it_behaves_like '.first'
     it_behaves_like '.last'
     it_behaves_like '.find'
-    it_behaves_like '.find_by id'
+    it_behaves_like '.find_by'
+    it_behaves_like '.find_by!'
     it_behaves_like 'custom finders'
     it_behaves_like '#method_missing'
     it_behaves_like '#attributes'
@@ -185,5 +199,6 @@ describe ActiveRepository, "Base" do
     it_behaves_like '#new_record?'
     it_behaves_like '.transaction'
     it_behaves_like '.delete_all'
+    it_behaves_like '#delete'
   end
 end

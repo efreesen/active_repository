@@ -1,14 +1,12 @@
-require 'pry'
-
 class ActiveRepository::ResultSet
 	def initialize(klass, query={}, attributes={})
     @klass = klass
-    @query = convert_query(query)
+    convert_query(query)
     @attributes = query.is_a?(Hash) ? attributes.merge(query) : attributes
   end
 
   def all
-    get_result(@query)
+    @query ? get_result(@query) : @klass.all
   end
 
   def count
@@ -16,7 +14,7 @@ class ActiveRepository::ResultSet
   end
 
   def first
-    all.first
+    @query ? all.first : @klass.all.first
   end
 
   def first_or_initialize
@@ -34,35 +32,36 @@ class ActiveRepository::ResultSet
   end
 
   def last
-    all.last
+    @query ? all.last : @klass.all.last
   end
 
   def where(query)
     @attributes = @attributes.merge(query) if query.is_a?(Hash)
-    query = and_query(query)
+    query = join_query(query, 'and')
 
     ActiveRepository::ResultSet.new(@klass, query, @attributes)
   end
   alias_method :and, :where
 
   def or(query)
-    query = or_query(query)
+    query = join_query(query, 'or')
 
     ActiveRepository::ResultSet.new(@klass, query, @attributes)
   end
 
 private
   def convert_query(query)
-    SqlQueryExecutor::Query::QueryNormalizer.clean_query(query)
+    @query = SqlQueryExecutor::Query::QueryNormalizer.clean_query(query)
   end
 
   def get_result(args)
     if @klass.repository?
       args = args.first if args.is_a?(Array) && args.size == 1
-      query_executor = SqlQueryExecutor::Base.new(@klass.all)
-      query_executor.where(args)
+      query_executor = SqlQueryExecutor::Base.new(@klass.all, args)
+      query_executor.execute!
     else
-      objects = PersistenceAdapter.where(@klass, sanitize_args(args)).map do |object|
+      query = SqlQueryExecutor::Base.new([], args)
+      objects = PersistenceAdapter.where(@klass, query).map do |object|
         @klass.serialize!(object.attributes)
       end
 
@@ -70,17 +69,8 @@ private
     end
   end
 
-  def and_query(query)
+  def join_query(query, separator)
     query = SqlQueryExecutor::Query::QueryNormalizer.clean_query(query)
-    query.blank? ? @query : (@query.blank? ? query : "(#{@query}) and (#{query})")
-  end
-
-  def or_query(query)
-    query = SqlQueryExecutor::Query::QueryNormalizer.clean_query(query)
-    query.blank? ? @query : (@query.blank? ? query : "(#{@query}) or (#{query})")
-  end
-
-  def self.sanitize_args(args)
-    args.first.is_a?(Hash) ? args.first : (args.first.is_a?(Array) ? args.first : args)
+    query.blank? ? @query : (@query.blank? ? query : "(#{@query}) #{separator} (#{query})")
   end
 end

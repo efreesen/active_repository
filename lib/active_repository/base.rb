@@ -5,6 +5,7 @@ require 'sql_query_executor'
 require 'active_repository/finders'
 require 'active_repository/writers'
 require 'active_repository/adapters/persistence_adapter'
+require 'active_repository/result_set'
 
 begin
   klass = Module.const_get(Mongoid::Document)
@@ -107,6 +108,7 @@ module ActiveRepository
       object = find_by(args)
 
       raise ActiveHash::RecordNotFound unless object
+      object
     end
 
     # Converts Persisted object(s) to it's ActiveRepository counterpart
@@ -147,17 +149,23 @@ module ActiveRepository
     def self.where(*args)
       raise ArgumentError.new("must pass at least one argument") if args.empty?
 
-      if repository?
-        args = args.first if args.respond_to?(:size) && args.size == 1
-        query_executor = SqlQueryExecutor::Base.new(all)
-        query_executor.where(args)
-      else
-        objects = PersistenceAdapter.where(self, sanitize_args(args)).map do |object|
-          self.serialize!(object.attributes)
-        end
+      result_set = ActiveRepository::ResultSet.new(self)
 
-        objects
-      end
+      # binding.pry
+
+      result_set.where(args)
+
+      # if repository?
+      #   args = args.first if args.respond_to?(:size) && args.size == 1
+      #   query_executor = SqlQueryExecutor::Base.new(all)
+      #   query_executor.where(args)
+      # else
+      #   objects = PersistenceAdapter.where(self, sanitize_args(args)).map do |object|
+      #     self.serialize!(object.attributes)
+      #   end
+
+      #   objects
+      # end
     end
 
     def get_model_class
@@ -174,14 +182,16 @@ module ActiveRepository
 
     # Gathers the persisted object from database and updates self with it's attributes.
     def reload
-      object = self.id.present? ? get_model_class.find(self.id) : self
+      object = self.id.present? ? 
+                 get_model_class.where(id: self.id).first_or_initialize : 
+                 self
 
       serialize! object.attributes
     end
 
     def save(force=false)
       if self.class == get_model_class
-        object = get_model_class.find(self.id)
+        object = get_model_class.where(id: self.id).first_or_initialize
 
         if force || self.id.nil?
           self.id = nil if self.id.nil?
@@ -232,27 +242,8 @@ module ActiveRepository
       end
 
     private
-
-      # Checks if model_class is a Mongoid model
-      def self.mongoid?
-        get_model_class.included_modules.include?(Mongoid::Document)
-      end
-
       def self.repository?
         self == get_model_class
-      end
-
-      def self.sanitize_args(args)
-        args.first.is_a?(Hash) ? args.first : (args.first.is_a?(Array) ? args.first : args)
-      end
-
-      def repository?
-        self.class.repository?
-      end
-
-      # Checks if model_class is a Mongoid model
-      def mongoid?
-        self.class.mongoid?
       end
 
       # Updates created_at and updated_at

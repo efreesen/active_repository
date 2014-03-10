@@ -46,8 +46,8 @@ class MongoidAdapter < DefaultAdapter
   #     [ret, object]
   #   end
 
-  #   def where(klass, args)
-  #     klass.where(args)
-  #   end
+    def where(klass, query)
+      klass.get_model_class.where(query.selector)
+    end
   end
 end

@@ -5,7 +5,7 @@ class DefaultAdapter
     end
 
     def delete(klass, id)
-      object = klass.get_model_class.find_by(id: id)
+      object = klass.get_model_class.where(id: id).first
       object.delete if object
     end
 
@@ -51,9 +51,8 @@ class DefaultAdapter
       [ret, object]
     end
 
-    def where(klass, args)
-      args[:id] = normalize_id(args) if args[:id]
-      klass.get_model_class.where(args)
+    def where(klass, query)
+      klass.get_model_class.where(query.to_sql)
     end
 
   private

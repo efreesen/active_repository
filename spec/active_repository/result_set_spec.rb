@@ -28,6 +28,34 @@ describe ActiveRepository::ResultSet, :result_set do
     end
   end
 
+  describe '#count' do
+    after do
+      Country.delete_all
+    end
+
+    context 'without query' do
+      it 'returns total records in data store' do
+        Country.create
+        Country.create
+        Country.create
+        Country.create
+
+        expect(Country.count).to eq 4
+      end
+    end
+
+    context 'without query' do
+      it 'returns total records in data store' do
+        Country.create(name: 'A')
+        Country.create
+        Country.create(name: 'B')
+        Country.create
+
+        expect(Country.where(name: { '$ne' => nil}).count).to eq 2
+      end
+    end
+  end
+
   describe '#where' do
     subject { ActiveRepository::ResultSet.new(Country) }
 

@@ -23,25 +23,6 @@ module ActiveRepository
       new_object
     end
 
-    # Searches for an object that matches the attributes on the parameter, if none is found
-    # it creates one with the defined attributes.
-    def find_or_create(attributes)
-      object = where(attributes).first
-
-      object.nil? ? create(attributes) : object
-    end
-
-    def find_or_initialize(attributes)
-      attributes = attributes.symbolize_keys if attributes.respond_to?(:symbolize_keys)
-      object     = where(attributes).first || self.new(attributes)
-
-      attributes.each do |key, value|
-        object.send("#{key}=", value)
-      end
-
-      serialize!(object.attributes)
-    end
-
     #:nodoc:
     module InstanceMethods
       # Assigns new_attributes parameter to the attributes in self.
@@ -67,7 +48,7 @@ module ActiveRepository
         key = key.to_sym
 
         if self.class == get_model_class
-          object = self.class.find_or_initialize(:id => self.id)
+          object = self.class.where(:id => self.id).first_or_initialize
 
           self.send("#{key}=", value)
 

@@ -1,5 +1,34 @@
 require 'set'
-require 'pry'
+
+shared_examples ".serialized_attributes" do
+  it "returns class name" do
+    Country.serialized_attributes.should == ["name", "monarch", "language", "created_at", "updated_at"]
+  end
+end
+
+shared_examples ".constantize" do
+  it "returns class name" do
+    Country.constantize.should == Country
+  end
+end
+
+shared_examples ".update_attribute" do
+  it "updates records" do
+    id = Country.first.id
+    country = Country.find(id)
+    country.update_attribute(:name, "Italy")
+
+    Country.first.name.should == "Italy"
+  end
+
+  it "updates records whit string keys" do
+    id = Country.first.id
+    country = Country.find(id)
+    country.update_attribute('name', "Germany")
+
+    Country.first.name.should == "Germany"
+  end
+end
 
 shared_examples ".update_attributes" do
   it "updates records" do
@@ -45,34 +74,27 @@ shared_examples ".where" do
   end
 
   it "returns all data as inflated objects" do
-    Country.where(:language => 'English', :name => 'US').all? { |country| country.should be_kind_of(Country) }
+    expect(Country.where(:language => 'English', :name => 'US')).to be_a ActiveRepository::ResultSet
   end
 
   it "populates the data correctly" do
     first_id = Country.first.id
     last_id  = Country.all[3].id
 
-    records = Country.where(:language => 'English')
-    records.first.id.should == first_id
-    records.first.name.should == "US"
-    records.last.id.should == last_id
-    records.last.name.should == "UK"
+    results = Country.where(:language => 'English').all
+    results.first.id.should == first_id
+    results.first.name.should == "US"
+    results.last.id.should == last_id
+    results.last.name.should == "UK"
   end
 
   it "filters the records from a AR-like conditions hash" do
     first_id = Country.first.id
 
-    record = Country.where(:name => 'US')
-    record.count.should == 1
-    record.first.id.should == first_id
-    record.first.name.should == 'US'
-  end
-
-  it "if id exists, use auto increment id" do
-    first_id = Country.first.id
-    country = Country.create(:name => "Russia", :language => 'Russian')
-
-    country.id.should_not == first_id
+    results = Country.where(:name => 'US').all
+    results.count.should == 1
+    results.first.id.should == first_id
+    results.first.name.should == 'US'
   end
 end
 
@@ -147,7 +169,7 @@ shared_examples ".find" do
   end
 end
 
-shared_examples ".find_by id" do
+shared_examples ".find_by" do
   context "with an id" do
     it "finds the record with the specified id" do
       id = Country.all[1].id
@@ -169,6 +191,62 @@ shared_examples ".find_by id" do
   context "with an id not present" do
     it "returns nil" do
       Country.find_by(id: 4567).should be_nil
+    end
+  end
+
+  context 'with a existing name' do
+    it "returns found element" do
+      Country.find_by(name: 'Canada').should == Country.all[1]
+    end
+  end
+
+  context 'with a not existing name' do
+    it "returns found element" do
+      Country.find_by(name: 'China').should be_nil
+    end
+  end
+end
+
+shared_examples ".find_by!" do
+  context "with an id" do
+    it "finds the record with the specified id" do
+      id = Country.all[1].id
+      Country.find_by!(id: id).id.should == id
+    end
+
+    it "finds the record with the specified id as a string" do
+      id = Country.all[1].id
+      Country.find_by!(id: id.to_s).id.should == id
+    end
+  end
+
+  context "with nil" do
+    it "returns nil" do
+      lambda {
+        Country.find_by!(id: nil)
+      }.should raise_error(ActiveHash::RecordNotFound)
+    end
+  end
+
+  context "with an id not present" do
+    it "returns nil" do
+      lambda {
+        Country.find_by!(id: 4567)
+      }.should raise_error(ActiveHash::RecordNotFound)
+    end
+  end
+
+  context 'with a existing name' do
+    it "returns found element" do
+      Country.find_by!(name: 'Canada').should == Country.all[1]
+    end
+  end
+
+  context 'with a not existing name' do
+    it "returns found element" do
+      lambda {
+        Country.find_by!(name: 'China')
+      }.should raise_error(ActiveHash::RecordNotFound)
     end
   end
 end
@@ -628,11 +706,11 @@ shared_examples "#delete" do
   it "removes a record" do
     country = Country.create
 
-    Country.size.should == 1
+    Country.count.should == 1
 
     country.delete
 
-    Country.size.should == 0
+    Country.count.should == 0
   end
 end
 

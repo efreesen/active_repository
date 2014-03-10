@@ -40,23 +40,8 @@ module ActiveHash
       end
     end
 
-    def self.where(query)
-      if query.is_a?(String)
-        return ActiveHash::SQLQueryExecutor.execute(self, query)
-      else
-        (@records || []).select do |record|
-          query.all? { |col, match| record[col] == match }
-        end
-      end
-    end
-
     def self.validate_unique_id(record)
       raise IdError.new("Duplicate Id found for record #{record.attributes}") if record_index.has_key?(record.id.to_s)
-    end
-
-    def update_attribute(key, value)
-      self.send("#{key}=", value)
-      self.save(:validate => false)
     end
 
     def readonly?
