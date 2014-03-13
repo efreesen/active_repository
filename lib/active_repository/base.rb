@@ -48,7 +48,7 @@ module ActiveRepository
   #
   #    class SaveInORMOrODMTest < ActiveRepository::Base
   #      SaveInORMOrODMTest.persistence_class = ORMOrODMModelClass
-  #      SaveInORMOrODMTest.set_save_in_memory(false)
+  #      SaveInORMOrODMTest.save_in_memory = false
   #    end
   #
   # Author::    Caio Torres (mailto:efreesen@gmail.com)
@@ -62,11 +62,10 @@ module ActiveRepository
     include ActiveRepository::Associations
     include ActiveRepository::Writers::InstanceMethods
 
-    class_attribute :model_class, :save_in_memory, :instance_writer => false
+    class_attribute :model_class, :instance_writer => false
+    class_attribute :save_in_memory, :instance_writer => true
 
     after_validation :set_timestamps
-
-    self.save_in_memory = true if self.save_in_memory == nil
 
     # Returns all persisted objects
     def self.all
@@ -89,7 +88,7 @@ module ActiveRepository
     end
 
     def self.persistence_class
-      return self if self.save_in_memory? || self.model_class.nil?
+      return self if save_in_memory? || self.model_class.nil?
       self.model_class
     end
 
@@ -141,9 +140,14 @@ module ActiveRepository
       persistence_class = value
     end
 
+    def self.save_in_memory?
+      self.save_in_memory == nil ? true : self.save_in_memory
+    end
+
     # Sets the class attribute save_in_memory, set it to true to ignore model_class attribute
     # and persist objects in memory
     def self.set_save_in_memory(value)
+      puts '[deprecation warning] This method is going to be deprecated, use "save_in_memory=" instead.'
       self.save_in_memory = value
     end
 

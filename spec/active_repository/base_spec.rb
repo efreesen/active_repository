@@ -21,7 +21,7 @@ describe ActiveRepository, "Base" do
     before do
       Country.fields :name, :monarch, :language, :created_at, :updated_at
       Country.persistence_class = Country
-      Country.set_save_in_memory(true)
+      Country.save_in_memory = true
 
       Country.create(:id => 1, :name => "US",     :language => 'English')
       Country.create(:id => 2, :name => "Canada", :language => 'English', :monarch => "The Crown of England")
@@ -84,7 +84,7 @@ describe ActiveRepository, "Base" do
       end
 
       Country.persistence_class = CountryModel
-      Country.set_save_in_memory(false)
+      Country.save_in_memory = false
 
       Country.create(:id => 1, :name => "US",     :language => 'English')
       Country.create(:id => 2, :name => "Canada", :language => 'English', :monarch => "The Crown of England")
@@ -154,7 +154,7 @@ describe ActiveRepository, "Base" do
       end
 
       Country.persistence_class = CountryModel
-      Country.set_save_in_memory(false)
+      Country.save_in_memory = false
 
       Country.delete_all
 
