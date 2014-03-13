@@ -2,11 +2,19 @@ class ActiveRepository::ResultSet
 	def initialize(klass, query={}, attributes={})
     @klass = klass
     convert_query(query)
-    @attributes = query.is_a?(Hash) ? attributes.merge(query) : attributes
+    @attributes = attributes.merge(SqlQueryExecutor::Query::Normalizers::QueryNormalizer.attributes_from_query(query))
   end
 
   def all
     @query ? get_result(@query) : @klass.all
+  end
+
+  def build(attributes)
+    @klass.new(@attributes.merge(attributes))
+  end
+
+  def create(attributes)
+    @klass.create(@attributes.merge(attributes))
   end
 
   def count
@@ -51,7 +59,7 @@ class ActiveRepository::ResultSet
 
 private
   def convert_query(query)
-    @query = SqlQueryExecutor::Query::QueryNormalizer.clean_query(query)
+    @query = SqlQueryExecutor::Query::Normalizers::QueryNormalizer.clean_query(query)
   end
 
   def get_result(args)
@@ -70,7 +78,7 @@ private
   end
 
   def join_query(query, separator)
-    query = SqlQueryExecutor::Query::QueryNormalizer.clean_query(query)
+    query = SqlQueryExecutor::Query::Normalizers::QueryNormalizer.clean_query(query)
     query.blank? ? @query : (@query.blank? ? query : "(#{@query}) #{separator} (#{query})")
   end
 end

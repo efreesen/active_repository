@@ -112,6 +112,48 @@ describe ActiveRepository::ResultSet, :result_set do
     end
   end
 
+  describe '#build' do
+    subject { ActiveRepository::ResultSet.new(Country) }
+
+    it "returns a Country object" do
+      expect(subject.build(name: 'Canada')).to be_a(Country)
+    end
+
+    it 'returns a new_record' do
+      result = subject.build(continent: 'America')
+
+      expect(result).to be_new_record
+    end
+
+    it 'merges attributes' do
+      result_set = subject.where(name: 'Canada')
+      result = result_set.build(continent: 'America')
+
+      expect(result.attributes).to eq(name: 'Canada', continent: 'America')
+    end
+  end
+
+  describe '#create' do
+    subject { ActiveRepository::ResultSet.new(Country) }
+
+    it "returns a Country object" do
+      expect(subject.create(name: 'Canada')).to be_a(Country)
+    end
+
+    it 'returns a persisted object' do
+      result = subject.create(continent: 'America')
+
+      expect(result).not_to be_new_record
+    end
+
+    it 'merges attributes' do
+      result_set = subject.where(name: 'Canada')
+      result = result_set.create(continent: 'America')
+
+      expect(result.attributes).to eq(name: 'Canada', continent: 'America', id: result.id)
+    end
+  end
+
   describe '#all' do
     before do
       Country.delete_all
@@ -243,7 +285,7 @@ describe ActiveRepository::ResultSet, :result_set do
           it 'returns a new object with specified attributes' do
             object = subject.where("name = 'Poland'").first_or_initialize
 
-            expect(object.attributes).to eq({})
+            expect(object.attributes).to eq(name: 'Poland')
           end
         end
       end
@@ -271,13 +313,13 @@ describe ActiveRepository::ResultSet, :result_set do
           it 'returns a new object with all Hashes as attributes' do
             object = subject.where(name: 'Poland').and("continent = 'Europe'").first_or_initialize
 
-            expect(object.attributes).to eq(name: 'Poland')
+            expect(object.attributes).to eq(name: 'Poland', continent: 'Europe')
           end
 
           it 'returns a new object with all Hashes as attributes' do
             object = subject.where("name = 'Poland'").and("continent = 'Europe'").first_or_initialize
 
-            expect(object.attributes).to eq({})
+            expect(object.attributes).to eq(name: 'Poland', continent: 'Europe')
           end
         end
       end
@@ -323,7 +365,7 @@ describe ActiveRepository::ResultSet, :result_set do
           it 'returns a new object with specified attributes' do
             object = subject.where("name = 'Poland'").first_or_create
 
-            expect(object.attributes).to eq(id: 5)
+            expect(object.attributes).to eq(name: 'Poland', id: 5)
           end
         end
       end
@@ -351,13 +393,13 @@ describe ActiveRepository::ResultSet, :result_set do
           it 'returns a new object with all Hashes as attributes' do
             object = subject.where(name: 'Poland').and("continent = 'Europe'").first_or_create
 
-            expect(object.attributes).to eq(id: 5, name: 'Poland')
+            expect(object.attributes).to eq(id: 5, name: 'Poland', continent: 'Europe')
           end
 
           it 'returns a new object with all Hashes as attributes' do
             object = subject.where("name = 'Poland'").and("continent = 'Europe'").first_or_create
 
-            expect(object.attributes).to eq(id: 5)
+            expect(object.attributes).to eq(:name=>"Poland", :continent=>"Europe", :id=>5)
           end
         end
       end
