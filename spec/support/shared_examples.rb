@@ -88,7 +88,7 @@ shared_examples ".where" do
     results.last.name.should == "UK"
   end
 
-  it "filters the records from a AR-like conditions hash" do
+  it "filters the records from an AR-like conditions hash" do
     first_id = Country.first.id
 
     results = Country.where(:name => 'US').all
@@ -194,7 +194,7 @@ shared_examples ".find_by" do
     end
   end
 
-  context 'with a existing name' do
+  context 'with an existing name' do
     it "returns found element" do
       Country.find_by(name: 'Canada').should == Country.all[1]
     end
@@ -236,7 +236,7 @@ shared_examples ".find_by!" do
     end
   end
 
-  context 'with a existing name' do
+  context 'with an existing name' do
     it "returns found element" do
       Country.find_by!(name: 'Canada').should == Country.all[1]
     end

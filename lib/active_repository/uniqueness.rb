@@ -120,7 +120,7 @@ module ActiveModel
       #                                      | # title!
       #
       # This could even happen if you use transactions with the 'serializable'
-      # isolation level. The best way to work around this problem is to add a unique
+      # isolation level. The best way to work around this problem is to add an unique
       # index to the database table using
       # ActiveRecord::ConnectionAdapters::SchemaStatements#add_index. In the
       # rare case that a race condition occurs, the database will guarantee

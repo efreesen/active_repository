@@ -125,7 +125,7 @@ module ActiveRepository
       end
     end
 
-    # Returns a array with the field names of the Class
+    # Returns an array with the field names of the Class
     def self.serialized_attributes
       field_names.map &:to_s
     end

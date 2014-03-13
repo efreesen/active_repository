@@ -85,7 +85,7 @@ describe ActiveRepository::ResultSet, :result_set do
   end
 
   describe '#and' do
-    it 'is a alias for #where' do
+    it 'is an alias for #where' do
       expect(described_class.instance_method(:and)).to eq described_class.instance_method(:where)
     end
   end

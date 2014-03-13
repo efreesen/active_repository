@@ -1,7 +1,7 @@
 # Module containing methods responsible for searching ActiveRepository objects
 module ActiveRepository #:nodoc:
   module Finders #:nodoc:
-    # Searches for a object containing the id in #id
+    # Searches for an object containing the id in #id
     def find(id)
       begin
         if repository?
