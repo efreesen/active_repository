@@ -441,7 +441,7 @@ end
 
 shared_examples "#to_param" do
   it "should return id as a string" do
-    country = Country.create
+    country = Country.create(name: 'Brazil')
     country.to_param.should == country.id.to_s
   end
 end
@@ -449,7 +449,7 @@ end
 shared_examples "#persisted?" do
   it "should return true if the object has been saved" do
     Country.delete_all
-    Country.create(:id => 2).should be_persisted
+    Country.create(:id => 2, name: 'Brazil').should be_persisted
   end
 
   it "should return false if the object has not been saved" do
@@ -563,6 +563,12 @@ shared_examples "#save" do
     Country.delete_all
   end
 
+  it "does not add object to the collection if it is not valid" do
+    country = Country.new :monarch => "King", :language => "bar"
+    country.save.should be_false
+    Country.count.should == 0
+  end
+
   it "adds the new object to the data collection" do
     Country.all.should be_empty
     country = Country.new :name => "foo", :monarch => "King", :language => "bar"
@@ -589,7 +595,7 @@ shared_examples ".create" do
 
   it "works with no args" do
     Country.all.should be_empty
-    country = Country.create
+    country = Country.create(name: 'Brazil')
 
     country.id.should == Country.last.id
   end
@@ -656,7 +662,7 @@ end
 
 shared_examples "#valid?" do
   it "should return true" do
-    Country.new.should be_valid
+    Country.new(name: 'Brazil').should be_valid
   end
 end
 
@@ -704,7 +710,7 @@ shared_examples "#delete" do
   end
 
   it "removes a record" do
-    country = Country.create
+    country = Country.create(name: 'Brazil')
 
     Country.count.should == 1
 
@@ -720,8 +726,8 @@ shared_examples ".delete_all" do
   end
 
   it "clears out all record" do
-    country1 = Country.create
-    country2 = Country.create
+    country1 = Country.create(name: 'Brazil')
+    country2 = Country.create(name: 'Brazil')
 
     countries_attributes = Country.all.map(&:attributes)
     expected_attributes  = [country1, country2].map(&:attributes)
@@ -739,5 +745,22 @@ shared_examples ".delete_all" do
     countries_attributes.should == expected_attributes
     Country.delete_all
     Country.all.should be_empty
+  end
+end
+
+shared_examples "uniqueness" do
+  before do
+    Country.delete_all
+    Country.validates_uniqueness_of :name
+  end
+
+  it "does not accept duplicated ids" do
+    country1 = Country.create(name: 'Brazil')
+    country2 = Country.create(name: 'Brazil')
+
+    country1.should be_valid
+    country2.should_not be_valid
+    Country.count.should == 1
+    Country.all.should == [country1]
   end
 end

@@ -9,6 +9,7 @@ describe ActiveRepository, "Base" do
 
   before do
     class Country < ActiveRepository::Base
+      validates_presence_of :name
     end
   end
 
@@ -63,6 +64,7 @@ describe ActiveRepository, "Base" do
     it_behaves_like '.transaction'
     it_behaves_like '.delete_all'
     it_behaves_like '#delete'
+    it_behaves_like 'uniqueness'
   end
 
   context "active_record", :active_record do
@@ -129,6 +131,7 @@ describe ActiveRepository, "Base" do
     it_behaves_like '.transaction'
     it_behaves_like '.delete_all'
     it_behaves_like '#delete'
+    it_behaves_like 'uniqueness'
   end
 
   context "mongoid", :mongoid do
@@ -200,5 +203,6 @@ describe ActiveRepository, "Base" do
     it_behaves_like '.transaction'
     it_behaves_like '.delete_all'
     it_behaves_like '#delete'
+    it_behaves_like 'uniqueness'
   end
 end
