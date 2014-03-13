@@ -18,6 +18,7 @@ describe ActiveRepository::Base, "associations" do
     end
 
     class City < ActiveRepository::Base
+      fields :name
     end
 
     class Author < ActiveRepository::Base
@@ -68,7 +69,7 @@ describe ActiveRepository::Base, "associations" do
       end
     end
 
-    context "with ActiveHash children" do
+    context "with ActiveRepository children" do
       before do
         Author.field :city_id
         @included_author_1 = Author.create :city_id => 1
@@ -92,7 +93,6 @@ describe ActiveRepository::Base, "associations" do
   end
 
   describe "#belongs_to" do
-
     context "with an ActiveRecord parent" do
       it "find the correct records" do
         City.belongs_to :country
@@ -108,7 +108,7 @@ describe ActiveRepository::Base, "associations" do
       end
     end
 
-    context "with an ActiveHash parent" do
+    context "with an ActiveRepository parent" do
       it "find the correct records" do
         Author.belongs_to :city
         city = City.create
@@ -164,6 +164,21 @@ describe ActiveRepository::Base, "associations" do
         author.city_id.should == @city.id
       end
     end
+
+    describe '#create_association' do
+      before do
+        Author.belongs_to :city
+      end
+
+      it "creates a city related to author" do
+        author = Author.new
+        city = author.create_city(name: 'Metropolis')
+
+        author.city.name.should == 'Metropolis'
+        author.city_id.should == city.id
+        author.city.should == city
+      end
+    end
   end
 
   describe "#has_one" do
@@ -184,7 +199,7 @@ describe ActiveRepository::Base, "associations" do
       end
     end
 
-    context "with ActiveHash children" do
+    context "with ActiveRepository children" do
       before do
         City.has_one :author
         Author.field :city_id
@@ -199,6 +214,34 @@ describe ActiveRepository::Base, "associations" do
       it "returns nil when there are no records" do
         city = City.create :id => 1
         city.author.should be_nil
+      end
+    end
+
+    describe '#create_association' do
+      before do
+        City.has_one :author
+        Author.field :city_id
+        Author.field :name
+      end
+
+      it "creates a city related to author" do
+        city = City.create
+        author = city.create_author(name: 'Clark Kent')
+
+        city.author.name.should == 'Clark Kent'
+        author.city_id.should == city.id
+        city.author.should == author
+      end
+
+      it "replaces existing relation" do
+        city = City.create
+        old_author = city.create_author(name: 'Clark Kent')
+        author = city.create_author(name: 'Bruce Wayne')
+
+        Author.where(city_id: city.id).count.should == 1
+        city.author.name.should == 'Bruce Wayne'
+        author.city_id.should == city.id
+        city.author.should == author
       end
     end
   end
