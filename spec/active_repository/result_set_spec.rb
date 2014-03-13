@@ -1,7 +1,6 @@
 require 'spec_helper'
 require 'active_repository'
 require 'active_repository/result_set'
-require 'pry'
 
 describe ActiveRepository::ResultSet, :result_set do
   before do

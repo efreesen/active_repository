@@ -3,7 +3,6 @@
 # Author::    Caio Torres  (mailto:efreesen@gmail.com)
 # License::   GPL
 
-require 'pry'
 
 module ActiveRepository
   module Associations

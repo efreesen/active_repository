@@ -163,8 +163,6 @@ module ActiveRepository
 
       result_set = ActiveRepository::ResultSet.new(self)
 
-      # binding.pry
-
       result_set.where(args)
 
       # if repository?
