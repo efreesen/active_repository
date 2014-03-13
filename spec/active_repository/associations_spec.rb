@@ -227,7 +227,7 @@ describe ActiveRepository::Base, "associations" do
       end
 
       class State < ActiveRepository::Base
-        State.set_model_class(StateModel)
+        State.persistence_class = StateModel
         State.set_save_in_memory(false)
         belongs_to :country
         has_many :cities
@@ -244,7 +244,7 @@ describe ActiveRepository::Base, "associations" do
       end
 
       class City < ActiveRepository::Base
-        City.set_model_class(CityModel)
+        City.persistence_class = CityModel
         City.set_save_in_memory(false)
         belongs_to :state
         has_many   :regions

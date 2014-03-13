@@ -11,7 +11,7 @@ class MongoidAdapter < DefaultAdapter
   #   end
 
     def exists?(klass, id)
-      klass.get_model_class.where(:id => id).present?
+      klass.persistence_class.where(:id => id).present?
     end
 
   #   def find(klass, id)
@@ -47,7 +47,7 @@ class MongoidAdapter < DefaultAdapter
   #   end
 
     def where(klass, query)
-      klass.get_model_class.where(query.selector)
+      klass.persistence_class.where(query.selector)
     end
   end
 end

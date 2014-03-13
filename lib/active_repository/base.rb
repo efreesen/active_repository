@@ -47,7 +47,7 @@ module ActiveRepository
   # Using ActiveRecord/Mongoid to persist objects:
   #
   #    class SaveInORMOrODMTest < ActiveRepository::Base
-  #      SaveInORMOrODMTest.set_model_class(ORMOrODMModelClass)
+  #      SaveInORMOrODMTest.persistence_class = ORMOrODMModelClass
   #      SaveInORMOrODMTest.set_save_in_memory(false)
   #    end
   #
@@ -88,10 +88,15 @@ module ActiveRepository
       repository? ? find_by(id: id).present? : PersistenceAdapter.exists?(self, id)
     end
 
+    def self.persistence_class
+      return self if self.save_in_memory? || self.model_class.nil?
+      self.model_class
+    end
+
     # Returns the Class responsible for persisting the objects
     def self.get_model_class
-      return self if self.model_class.nil? || self.save_in_memory?
-      save_in_memory? ? self : self.model_class
+      puts '[deprecation warning] This method is going to be deprecated, use "persistence_class" instead.'
+      persistence_class
     end
 
     # Searches all objects that matches #field_name field with the #args value(s)
@@ -126,11 +131,14 @@ module ActiveRepository
       field_names.map &:to_s
     end
 
+    def self.persistence_class=(value)
+      self.model_class = value
+    end
+
     # Sets the class attribute model_class, responsible to persist the ActiveRepository objects
     def self.set_model_class(value)
-      self.model_class = value if model_class.nil?
-
-      self.set_save_in_memory(repository?)
+      puts '[deprecation warning] This method is going to be deprecated, use "persistence_class=" instead.'
+      persistence_class = value
     end
 
     # Sets the class attribute save_in_memory, set it to true to ignore model_class attribute
@@ -168,8 +176,13 @@ module ActiveRepository
       # end
     end
 
+    def persistence_class
+      self.class.persistence_class
+    end
+
     def get_model_class
-      self.class.get_model_class
+      puts '[deprecation warning] This method is going to be deprecated, use "persistence_class" instead.'
+      self.class.persistence_class
     end
 
     # Persists the object using the class defined on the model_class attribute, if none defined it 
@@ -183,15 +196,15 @@ module ActiveRepository
     # Gathers the persisted object from database and updates self with it's attributes.
     def reload
       object = self.id.present? ? 
-                 get_model_class.where(id: self.id).first_or_initialize : 
+                 persistence_class.where(id: self.id).first_or_initialize : 
                  self
 
       serialize! object.attributes
     end
 
     def save(force=false)
-      if self.class == get_model_class
-        object = get_model_class.where(id: self.id).first_or_initialize
+      if self.class == persistence_class
+        object = persistence_class.where(id: self.id).first_or_initialize
 
         if force || self.id.nil?
           self.id = nil if self.id.nil?
@@ -223,10 +236,10 @@ module ActiveRepository
       # Find related object on the database and updates it with attributes in self, if it didn't
       # find it on database it creates a new one.
       def convert(attribute="id")
-        klass = get_model_class
+        klass = persistence_class
         object = klass.where(attribute.to_sym => self.send(attribute)).first
 
-        object ||= get_model_class.new
+        object ||= persistence_class.new
 
         attributes = self.attributes
 
@@ -243,7 +256,7 @@ module ActiveRepository
 
     private
       def self.repository?
-        self == get_model_class
+        self == persistence_class
       end
 
       # Updates created_at and updated_at

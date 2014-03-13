@@ -1,42 +1,42 @@
 class DefaultAdapter
   class << self
     def all(klass)
-      klass.get_model_class.all
+      klass.persistence_class.all
     end
 
     def delete(klass, id)
-      object = klass.get_model_class.where(id: id).first
+      object = klass.persistence_class.where(id: id).first
       object.delete if object
     end
 
     def delete_all(klass)
-      klass.get_model_class.delete_all
+      klass.persistence_class.delete_all
     end
 
     def exists?(klass, id)
-      klass.get_model_class.exists?(id)
+      klass.persistence_class.exists?(id)
     end
 
     def find(klass, id)
       id = normalize_id(id) if id
 
-      klass.get_model_class.find(id)
+      klass.persistence_class.find(id)
     end
 
     def first(klass)
-      klass.get_model_class.first
+      klass.persistence_class.first
     end
 
     def last(klass)
-      klass.get_model_class.last
+      klass.persistence_class.last
     end
 
     def create(klass, attributes)
-      object = klass.get_model_class.create(attributes)
+      object = klass.persistence_class.create(attributes)
     end
 
     def update_attribute(klass, id, key, value)
-      object = id.nil? ? klass.get_model_class.new(key.to_sym => value) : klass.get_model_class.find(id)
+      object = id.nil? ? klass.persistence_class.new(key.to_sym => value) : klass.persistence_class.find(id)
 
       ret = object.update_attribute(key, value)
 
@@ -44,7 +44,7 @@ class DefaultAdapter
     end
 
     def update_attributes(klass, id, attributes)
-      object = id.nil? ? klass.get_model_class.new : klass.get_model_class.find(id)
+      object = id.nil? ? klass.persistence_class.new : klass.persistence_class.find(id)
 
       ret = object.update_attributes(attributes)
 
@@ -52,7 +52,7 @@ class DefaultAdapter
     end
 
     def where(klass, query)
-      klass.get_model_class.where(query.to_sql)
+      klass.persistence_class.where(query.to_sql)
     end
 
   private

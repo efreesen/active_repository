@@ -7,7 +7,7 @@ module ActiveRepository
       object = self.new(attributes)
 
       if object.present? && object.valid?
-        if get_model_class == self
+        if persistence_class == self
           object.id = nil unless exists?(object.id)
 
           object.save
@@ -35,7 +35,7 @@ module ActiveRepository
       # Deletes self from the repository.
       def delete
         klass = self.class
-        if klass.get_model_class == klass
+        if klass.persistence_class == klass
           super
         else
           PersistenceAdapter.delete(klass, self.id)
@@ -47,7 +47,7 @@ module ActiveRepository
         ret = true
         key = key.to_sym
 
-        if self.class == get_model_class
+        if self.class == persistence_class
           object = self.class.where(:id => self.id).first_or_initialize
 
           self.send("#{key}=", value)
@@ -68,7 +68,7 @@ module ActiveRepository
       def update_attributes(attributes)
         attributes  = attributes.symbolize_keys if attributes.respond_to?(:symbolize_keys)
         klass       = self.class
-        model_class = get_model_class
+        model_class = persistence_class
 
         if klass == model_class
           attributes.each do |key, value|

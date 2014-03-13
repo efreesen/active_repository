@@ -4,7 +4,7 @@ require 'active_repository/adapters/mongoid_adapter'
 class PersistenceAdapter
   class << self
     def get_adapter(klass)
-      modules = klass.get_model_class.included_modules.map(&:to_s)
+      modules = klass.persistence_class.included_modules.map(&:to_s)
       if modules.include?("Mongoid::Document")
         MongoidAdapter
       else
