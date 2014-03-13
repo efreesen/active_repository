@@ -17,56 +17,9 @@ module ActiveModel
 
         record.errors.add(attribute, :taken, options.except(:case_sensitive, :scope, :conditions).merge(:value => value)) if duplicate.any?
       end
-
-    protected
-
-      # The check for an existing value should be run from a class that
-      # isn't abstract. This means working down from the current class
-      # (self), to the first non-abstract class. Since classes don't know
-      # their subclasses, we have to build the hierarchy between self and
-      # the record's class.
-      def find_finder_class_for(record) #:nodoc:
-        class_hierarchy = [record.class]
-
-        while class_hierarchy.first != @klass
-          class_hierarchy.prepend(class_hierarchy.first.superclass)
-        end
-
-        class_hierarchy.detect { |klass| klass.respond_to?(:abstract_class?) ? !klass.abstract_class? : true }
-      end
-
-      def build_relation(klass, table, attribute, value) #:nodoc:
-        column, attribute, value = get_reflection_attributes(klass)
-
-        value = column.limit ? value.to_s[0, column.limit] : value.to_s if !value.nil? && column.text?
-
-        if !options[:case_sensitive] && value && column.text?
-          # will use SQL LOWER function before comparison, unless it detects a case insensitive collation
-          relation = klass.connection.case_insensitive_comparison(table, attribute, column, value)
-        else
-          value    = klass.connection.case_sensitive_modifier(value) unless value.nil?
-          relation = table[attribute].eq(value)
-        end
-
-        relation
-      end
-
-    private
-      def get_reflection_attributes(klass, attribute, value)
-        reflection = klass.reflect_on_association(attribute)
-        column     = klass.columns_hash[reflection.foreign_key]
-
-        if reflection
-          attribute = reflection.foreign_key
-          value = value.attributes[reflection.primary_key_column.name]
-        else
-          column = klass.columns_hash[attribute.to_s]
-        end
-
-        [column, attribute, value]
-      end
     end
 
+    private
     module ClassMethods
       # Validates whether the value of the specified attributes are unique
       # across the system. Useful for making sure that only one user

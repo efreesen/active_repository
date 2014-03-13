@@ -56,8 +56,4 @@ class PersistenceAdapter
       get_adapter(klass).where(klass, args)
     end
   end
-
-  def method_missing(sym, *args, &block)
-    get_adapter(args.first).send(sym, args)
-  end
 end
