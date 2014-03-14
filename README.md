@@ -2,27 +2,27 @@
 
 [[![Coverage Status](https://coveralls.io/repos/efreesen/active_repository/badge.png)](https://coveralls.io/r/efreesen/active_repository)![Build Status](https://secure.travis-ci.org/efreesen/active_repository.png)](http://travis-ci.org/efreesen/active_repository)[![Dependency Status](https://gemnasium.com/efreesen/active_repository.png)](https://gemnasium.com/efreesen/active_repository) [![Code Climate](https://codeclimate.com/github/efreesen/active_repository.png)](https://codeclimate.com/github/efreesen/active_repository)
 
-ActiveRepository was designed so you can build your Business Models without depending on any ORM. It by default saves your data in memory using ActiveHash (https://github.com/zilkey/active_hash). Then when you decide which ORM you want to use you only have to connect ActiveRepository with it.
+ActiveRepository was designed so you can build your Business Models without any dependence on persistence. It by default saves your data in memory using ActiveHash (https://github.com/zilkey/active_hash). Then when you decide which kind of persistence you want to use, all you have to do is connect ActiveRepository with it.
 
-Currently it only works with ActiveRecord and/or Mongoid.
+Currently it only works with ActiveRecord and/or Mongoid, but it is easy to add adaptors. If you need any adaptor, just open an issue!
 
-It also has the advantage of letting you test directly in memory, with no need to save data on disk, which gives a great boost to your test suite speed.
+With it you can always run your tests directly into memory, boosting your suite's speed. If you need to run all tests or a single spec using persistence you can do it too.
 
-Here are some data for comparison:
+Check out our benchmark:
 
 * **ActiveRepository:**
-  Finished in **0.63357** seconds;
-  78 examples, 0 failures
+  Finished in **2.96** seconds
+  90 examples, 0 failures
 
 * **ActiveRecord:**
-  Finished in **3.78** seconds;
-  78 examples, 0 failures
+  Finished in **6.29** seconds
+  90 examples, 0 failures
 
 * **Mongoid:**
-  Finished in **5.25** seconds;
-  78 examples, 0 failures
+  Finished in **7.01** seconds
+  90 examples, 0 failures
 
-With ActiveRepository you can make associations with ActiveRecord, Mongoid and ActiveRepository seamlessly.
+In ActiveRepository you will always work with ActiveRepository objects, so you can create relations between ActiveRecord and Mongoid seamlessly. You can even use Mongoid's Origin query format or keep with the sql format no matter what kind of persistence you are using, we convert it for you!
 
 ## Requirements
 
@@ -48,43 +48,60 @@ Or install it yourself as:
 
 To use it you should inherit ActiveRepository::Base:
 
-    class User < ActiveRepository::Base
+    class UserRepository < ActiveRepository::Base
+      persistence_class = User
+      save_in_memory = false
     end
 
 ActiveRepository::Base has two class attributes to help it identify where it is going to persist data
 
-###model_class
+###persistence_class
 
-This attribute is used to identify the class responsible for persisting data, it should be the ActiveRecord model or the Mongoid Document.
+This attribute is used to identify the class responsible for persisting data, it should be the ActiveRecord model or the Mongoid Document. Let's say your ActiveRecord Model is called User, using the example above, all database actions would be passed to User class, and you can keep your business logic inside the UserRepository class.
 
 ###save_in_memory
 
-This attribute is used to persist data directly into memory. When set to true, it ignores the model_class attribute value and save in the memory, if set to false it user model_class to persist data.
+This attribute is used to persist data directly into memory. When set to true, it ignores the persistence_class attribute and save in memory, if set to false it goes back to persistence_class. You can use it to keep your tests saving in memory, and set it to false manually if a test need to touch the database.
 
-P.S.: Just be careful, the set_save_in_memory method should always be called after set_model_class method.
+###Postfix
 
-    class User < ActiveRepository::Base
-      # Defines the class responsible for persisting data
-      set_model_class(UserModel)
+ActiveRepository has an attribute to help keep your cody clean, the postfix, can be used to define a pattern for Persistence classes so you don't need to keep declaring it in every class. When using it, your persistence_class name would be <class_name> + <postfix>.
 
-      # Set this to true in order to ignore model_class attribute and persist in memory
-      set_save_in_memory(true)
+Here is an example, let's say you have a bunch of Mongoid Documents and you don't want to declare persistence_class for each repository. So you can create a Base Repository and declare the postfix:
+
+    class BaseRepository < ActiveRepository::Base
+      # Defines the postfix
+      postfix "Document"
+
+      save_in_memory = false
     end
 
-Then, you have only to set the fields it is going to use:
+You have to rename your Mongoid Documents to the pattern <class_name> + <postfix> like this:
 
-    class User < ActiveRepository::Base
+    class UserDocument
+      include Mongoid::Document
+    end
+
+And you can create your repositories inheriting from BaseRepository:
+
+    class User < BaseRepository
+    end
+
+Then you are good to go!!!
+
+###Setting fields
+
+After defining the persistence options, you can set the fields it is going to use:
+
+    class UserRepository < ActiveRepository::Base
       # Defines the fields of the class
       fields :name, :email, :birthdate
 
-      set_model_class(UserModel)
-
-      set_save_in_memory(true)
+      persistence_class = User
+      save_in_memory = false
     end
 
 Now you are all set and ready to go. It is just using ActiveRepository as if it was your ActiveRecord model or Mongoid Document.
-
-You can check an example project here: https://github.com/efreesen/sports_betting_engine
 
 ## Contributing
 
