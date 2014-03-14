@@ -15,14 +15,13 @@ module ActiveRepository
       def has_many(association_id, options = {})
         define_method(association_id) do
           options = {
-            class_name:  association_id.to_s.classify,
-            foreign_key: self.class.to_s.foreign_key
+            class_name:  association_id.to_s.classify
           }.merge(options)
 
+          foreign_key = self.class.to_s.foreign_key
           klass = options[:class_name].constantize
-          objects = []
 
-          klass.where(options[:foreign_key] => id)
+          klass.where(foreign_key => id)
         end
       end
 
@@ -62,43 +61,45 @@ module ActiveRepository
 
       def define_has_one_method(association_id, options)
         define_method(association_id) do
-          options[:foreign_key] = self.class.to_s.foreign_key
+          foreign_key = self.class.to_s.foreign_key
+          klass       = options[:class_name].constantize
 
-          klass = options[:class_name].constantize
-
-          klass.where(options[:foreign_key] => self.id).first
+          klass.where(foreign_key => self.id).first
         end
       end
 
       def define_has_one_setter(association_id, options)
         define_method("#{association_id}=") do |object|
-          options[:foreign_key] = self.class.to_s.foreign_key
-          klass = options[:class_name].constantize
+          primary_key = self.send(self.class.primary_key)
+          foreign_key = self.class.to_s.foreign_key
+          association = self.send(association_id)
 
-          self.send(association_id).update_attribute(options[:foreign_key], nil) if self.send(association_id)
+          association.update_attribute(foreign_key, nil) if association
 
-          object.update_attribute(options[:foreign_key], self.send(self.class.primary_key)) if object
+          object.update_attribute(foreign_key, primary_key) if object
         end
       end
 
       def define_has_one_create(association_id, options)
         define_method("create_#{association_id}") do |attributes|
-          options[:foreign_key] = self.class.to_s.foreign_key
-          klass = options[:class_name].constantize
+          primary_key = self.send(self.class.primary_key)
+          foreign_key = self.class.to_s.foreign_key
+          association = self.send(association_id)
+          klass       = options[:class_name].constantize
 
-          self.send(association_id).update_attribute(options[:foreign_key], nil) if self.send(association_id)
+          association.update_attribute(foreign_key, nil) if 
           self.send("#{association_id}=", nil)
 
-          klass.create(attributes.merge(options[:foreign_key] => self.send(self.class.primary_key)))
+          klass.create(attributes.merge(foreign_key => primary_key))
         end
       end
 
       def define_belongs_to_method(association_id, options)
         define_method(association_id) do
           klass = options[:class_name].constantize
-          id    = send(options[:foreign_key])
+          foreign_key = send(options[:foreign_key])
 
-          klass.where(klass.primary_key => id).first
+          klass.where(klass.primary_key => foreign_key).first
         end
       end
 
