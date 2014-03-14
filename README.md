@@ -22,7 +22,7 @@ Check out our benchmark:
   Finished in **7.01** seconds
   90 examples, 0 failures
 
-In ActiveRepository you will always work with ActiveRepository objects, so you can create relations between ActiveRecord and Mongoid seamlessly. You can even use Mongoid's Origin query format or keep with the sql format no matter what kind of persistence you are using, we convert it for you!
+In ActiveRepository you will always work with ActiveRepository objects, so you can create relations between ActiveRecord and Mongoid seamlessly. You can even use Mongoid's Origin query format or keep with the SQL format no matter what kind of persistence you are using, we convert it for you!
 
 ## Requirements
 
@@ -46,26 +46,33 @@ Or install it yourself as:
 
 ## Usage
 
-To use it you should inherit ActiveRepository::Base:
+To use it your class should inherit ActiveRepository::Base:
 
     class UserRepository < ActiveRepository::Base
       persistence_class = User
       save_in_memory = false
     end
 
-ActiveRepository::Base has two class attributes to help it identify where it is going to persist data
+ActiveRepository::Base has two class attributes to help it identify where it is going to persist data.
 
 ###persistence_class
 
-This attribute is used to identify the class responsible for persisting data, it should be the ActiveRecord model or the Mongoid Document. Let's say your ActiveRecord Model is called User, using the example above, all database actions would be passed to User class, and you can keep your business logic inside the UserRepository class.
+This attribute is used to identify the class responsible for persisting data, it should be the ActiveRecord model or the Mongoid Document. Let's say your ActiveRecord Model is called User, using the example above, all database actions would be passed to User class, and you can extract all your business logic to the UserRepository class.
 
 ###save_in_memory
 
-This attribute is used to persist data directly into memory. When set to true, it ignores the persistence_class attribute and save in memory, if set to false it goes back to persistence_class. You can use it to keep your tests saving in memory, and set it to false manually if a test need to touch the database.
+This attribute is used to persist data directly into memory. When set to true, it ignores the persistence_class attribute and save in memory. If set to false it goes back to persistence_class. You can use it to keep your tests saving in memory, or set it to false manually if a test need to touch the database.
+
+If using Rails you can even tie it to your environment, so in tests it is set to true and otherwise it is set to false, like this:
+
+    class UserRepository < ActiveRepository::Base
+      persistence_class = User
+      save_in_memory = Rails.env.test?
+    end
 
 ###postfix
 
-ActiveRepository also has an attribute to help keep your cody clean, the postfix. It can be used to define a pattern for Persistence classes so you don't need to keep declaring it in everywhere. When using it, your persistence_class name would be \<class_name\> + \<postfix\>.
+ActiveRepository also has an attribute to help you keep your code clean, the postfix. It can be used to define a pattern for Persistence classes so you don't need to keep declaring it everywhere. When using it, your persistence_class name would be \<repository_class_name\> + \<postfix\>.
 
 Here is an example, let's say you have a bunch of Mongoid Documents and you don't want to declare persistence_class for each repository. So you can create a Base Repository and declare the postfix:
 
