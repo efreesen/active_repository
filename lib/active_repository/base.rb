@@ -63,7 +63,7 @@ module ActiveRepository
     include ActiveRepository::Writers::InstanceMethods
 
     class_attribute :model_class, :instance_writer => false
-    class_attribute :save_in_memory, :instance_writer => true
+    class_attribute :save_in_memory, :postfix, :instance_writer => true
 
     after_validation :set_timestamps
 
@@ -88,8 +88,9 @@ module ActiveRepository
     end
 
     def self.persistence_class
-      return self if save_in_memory? || self.model_class.nil?
-      self.model_class
+      return self if save_in_memory? || (postfix.nil? && self.model_class.nil?)
+      return "#{self}#{postfix.classify}".constantize if postfix.present?
+      self.model_class.to_s.constantize
     end
 
     # Returns the Class responsible for persisting the objects

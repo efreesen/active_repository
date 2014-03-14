@@ -17,6 +17,46 @@ describe ActiveRepository, "Base" do
     Object.send :remove_const, :Country
   end
 
+  describe 'postfix' do
+    before do
+      class CountryPersistence
+      end
+    end
+
+    context 'when postfix is present' do
+      before do
+        Country.postfix = "persistence"
+        Country.save_in_memory = false
+      end
+
+      it 'in persistence_class returns class name and postfix' do
+        Country.persistence_class.to_s.should == "CountryPersistence"
+      end
+    end
+
+    context 'when postfix and persistence_class are present' do
+      before do
+        Country.postfix = "persistence"
+        Country.persistence_class = "CountryModel"
+        Country.save_in_memory = false
+      end
+
+      it 'in persistence_class returns class name and postfix' do
+        Country.persistence_class.to_s.should == "CountryPersistence"
+      end
+    end
+
+    context 'whe postfix and savi_in_memory are present' do
+      before do
+        Country.postfix = "persistence"
+      end
+
+      it 'in persistence_class returns class name and postfix' do
+        Country.persistence_class.to_s.should == "Country"
+      end
+    end
+  end
+
   context "in_memory", :in_memory do
     before do
       Country.fields :name, :monarch, :language, :created_at, :updated_at
