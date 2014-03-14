@@ -63,9 +63,9 @@ This attribute is used to identify the class responsible for persisting data, it
 
 This attribute is used to persist data directly into memory. When set to true, it ignores the persistence_class attribute and save in memory, if set to false it goes back to persistence_class. You can use it to keep your tests saving in memory, and set it to false manually if a test need to touch the database.
 
-###Postfix
+###postfix
 
-ActiveRepository has an attribute to help keep your cody clean, the postfix, can be used to define a pattern for Persistence classes so you don't need to keep declaring it in every class. When using it, your persistence_class name would be <class_name> + <postfix>.
+ActiveRepository also has an attribute to help keep your cody clean, the postfix. It can be used to define a pattern for Persistence classes so you don't need to keep declaring it in everywhere. When using it, your persistence_class name would be \<class_name\> + \<postfix\>.
 
 Here is an example, let's say you have a bunch of Mongoid Documents and you don't want to declare persistence_class for each repository. So you can create a Base Repository and declare the postfix:
 
@@ -76,7 +76,7 @@ Here is an example, let's say you have a bunch of Mongoid Documents and you don'
       save_in_memory = false
     end
 
-You have to rename your Mongoid Documents to the pattern <class_name> + <postfix> like this:
+You have to rename your Mongoid Documents to the defined pattern, like this:
 
     class UserDocument
       include Mongoid::Document
@@ -101,7 +101,7 @@ After defining the persistence options, you can set the fields it is going to us
       save_in_memory = false
     end
 
-Now you are all set and ready to go. It is just using ActiveRepository as if it was your ActiveRecord model or Mongoid Document.
+Now you are all set and ready to go. Your business logic is decoupled from the persistence tier!
 
 ## Contributing
 
