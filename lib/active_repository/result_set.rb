@@ -9,6 +9,14 @@ class ActiveRepository::ResultSet
     @query ? get_result(@query) : @klass.all
   end
 
+  def each(&block)
+    all.each(&block)
+  end
+
+  def pluck(attribute)
+    all.map(&attribute)
+  end
+
   def build(attributes)
     @klass.new(@attributes.merge(attributes))
   end
