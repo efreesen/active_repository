@@ -7,18 +7,6 @@ require 'active_repository/writers'
 require 'active_repository/adapters/persistence_adapter'
 require 'active_repository/result_set'
 
-begin
-  klass = Module.const_get(Mongoid::Document)
-  unless klass.is_a?(Class)
-    raise "Not defined"
-  end
-rescue
-  module Mongoid
-    module Document
-    end
-  end
-end
-
 module ActiveRepository
 
   # Base class for ActiveRepository gem.
