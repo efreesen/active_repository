@@ -246,7 +246,7 @@ module ActiveRepository
 
         object ||= persistence_class.new
 
-        attributes = self.attributes
+        attributes = self.attributes.select{ |key, value| self.class.serialized_attributes.include?(key.to_s) }
 
         attributes.delete(:id)
 
