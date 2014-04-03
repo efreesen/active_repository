@@ -19,6 +19,14 @@ end
 
 module ActiveHash
   class Base
+    def initialize(attributes = {})
+      attributes = attributes.symbolize_keys
+      @attributes = attributes
+      attributes.dup.each do |key, value|
+        send "#{key}=", value
+      end
+    end
+
     def self.insert(record)
       record_id   = record.id.to_s
       record_hash = record.hash
