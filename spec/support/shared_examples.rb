@@ -88,6 +88,12 @@ shared_examples ".where" do
     results.last.name.should == "UK"
   end
 
+  it "finds elements which id's are not null" do
+    results = Country.where('id is not "null"').all
+    
+    results.size.should == 5
+  end
+
   it "filters the records from an AR-like conditions hash" do
     first_id = Country.first.id
 
