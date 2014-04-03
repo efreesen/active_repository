@@ -50,7 +50,8 @@ module ActiveRepository
     include ActiveRepository::Associations
     include ActiveRepository::Writers::InstanceMethods
 
-    class_attribute :model_class, :instance_writer => false
+    class_attribute :model_class, :before_save_methods, :after_save_methods, :instance_writer => false
+    class_attribute :before_create_methods, :after_create_methods, :instance_writer => false
     class_attribute :save_in_memory, :postfix, :instance_writer => true
 
     after_validation :set_timestamps
@@ -58,6 +59,14 @@ module ActiveRepository
     # Returns all persisted objects
     def self.all
       (repository? ? super : PersistenceAdapter.all(self).map { |object| serialize!(object.attributes) })
+    end
+
+    def self.before_save(*methods, options)
+      self.before_save_methods = ((before_save_methods || []) + methods).flatten
+    end
+
+    def self.after_save(*methods, options)
+      self.after_save_methods = ((after_save_methods || []) + methods).flatten
     end
 
     # Constantize class name
@@ -194,21 +203,26 @@ module ActiveRepository
     end
 
     def save(force=false)
+      (before_save_methods || []).each { |method| self.send(method) }
+      result = true
+
       if self.class == persistence_class
         object = persistence_class.where(id: self.id).first_or_initialize
 
-        if force || self.id.nil?
+        result = if force || self.id.nil?
           self.id = nil if self.id.nil?
           super
         elsif self.valid?
-          object.attributes = self.attributes
+          object.attributes = self.attributes.select{ |key, value| self.class.serialized_attributes.include?(key.to_s) }
           object.save(true)
         end
-
-        self.valid?
       else
-        self.persist
+        result = self.persist
       end
+
+      (after_save_methods || []).each { |method| self.send(method) }
+
+      result
     end
 
     # Updates attributes from self with the attributes from the parameters
