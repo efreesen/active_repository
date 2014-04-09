@@ -62,11 +62,11 @@ module ActiveRepository
     end
 
     def self.before_save(*methods, options)
-      self.before_save_methods = ((before_save_methods || []) + methods).flatten
+      add_callbacks(__method__, methods, options)
     end
 
     def self.after_save(*methods, options)
-      self.after_save_methods = ((after_save_methods || []) + methods).flatten
+      add_callbacks(__method__, methods, options)
     end
 
     # Constantize class name
@@ -88,6 +88,10 @@ module ActiveRepository
       return self if save_in_memory? || (postfix.nil? && self.model_class.nil?)
       return "#{self}#{postfix.classify}".constantize if postfix.present?
       self.model_class.to_s.constantize
+    end
+
+    def self.repository?
+      self == persistence_class
     end
 
     # Returns the Class responsible for persisting the objects
@@ -203,7 +207,7 @@ module ActiveRepository
     end
 
     def save(force=false)
-      (before_save_methods || []).each { |method| self.send(method) }
+      execute_callbacks(before_save_methods)
       result = true
 
       if self.class == persistence_class
@@ -220,7 +224,8 @@ module ActiveRepository
         result = self.persist
       end
 
-      (after_save_methods || []).each { |method| self.send(method) }
+      execute_callbacks(after_save_methods)
+      # (after_save_methods || []).each { |method| self.send(method) }
 
       result
     end
@@ -260,8 +265,25 @@ module ActiveRepository
       end
 
     private
-      def self.repository?
-        self == persistence_class
+      def self.add_callbacks(kind, methods, options)
+        methods = methods.map { |method| {method: method, options: options} }
+        current_callbacks = (self.send("#{kind}_methods") || [])
+        self.send("#{kind}_methods=", (current_callbacks + methods)).flatten
+      end
+      private_class_method :set_callback
+
+      def execute_callbacks(callbacks)
+        callbacks.each do |callback|
+          method = callback[:method]
+          options = callback[:options]
+
+          if_option = !!options[:if].try(:call, self)
+          else_option = options[:else].try(:call, self)
+
+          if if_option || !(else_option.nil? ? true : else_option)
+            self.send(method)
+          end
+        end
       end
 
       # Updates created_at and updated_at
