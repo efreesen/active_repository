@@ -273,7 +273,7 @@ module ActiveRepository
       private_class_method :set_callback
 
       def execute_callbacks(callbacks)
-        callbacks.each do |callback|
+        Array(callbacks).each do |callback|
           method = callback[:method]
           options = callback[:options]
 
