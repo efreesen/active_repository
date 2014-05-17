@@ -30,7 +30,7 @@ class ActiveRepository::ResultSet
   end
 
   def first
-    @query ? all.first : @klass.all.first
+    @query ? all.first : @klass.first
   end
 
   def first_or_initialize
@@ -48,7 +48,7 @@ class ActiveRepository::ResultSet
   end
 
   def last
-    @query ? all.last : @klass.all.last
+    @query ? all.last : @klass.last
   end
 
   def where(query)
