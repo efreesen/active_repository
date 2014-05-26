@@ -2,12 +2,9 @@ module ActiveModel
   module Validations
     class UniquenessValidator < ActiveModel::EachValidator #:nodoc:
       def initialize(options)
-        super(options.reverse_merge(:case_sensitive => true))
-      end
-
-      # Unfortunately, we have to tie Uniqueness validators to a class.
-      def setup(klass)
-        @klass = klass
+        super
+        options.reverse_merge(:case_sensitive => true)
+        @klass = options[:class]
       end
 
       def validate_each(record, attribute, value)
