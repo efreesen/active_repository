@@ -1,9 +1,12 @@
-require 'coveralls'
-Coveralls.wear!
-# require 'simplecov'
-# SimpleCov.start do
-#   add_filter "/spec/"
-# end
+if ENV['TRAVIS']
+  require 'coveralls'
+  Coveralls.wear!
+else
+  require 'simplecov'
+  SimpleCov.start do
+    add_filter "/spec/"
+  end
+end
 
 require 'rspec'
 require 'rspec/autorun'
