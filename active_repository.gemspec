@@ -30,7 +30,7 @@ Gem::Specification.new do |gem|
   ]
 
   gem.add_runtime_dependency(%q<active_hash>, [">= 1.2.3"])
-  gem.add_runtime_dependency(%q<activemodel>, [">= 4.1.4"])
+  gem.add_runtime_dependency(%q<activemodel>, [">= 3.2.0"])
   gem.add_runtime_dependency(%q<sql_query_executor>, [">= 0.3.6"])
   gem.add_development_dependency(%q<pry>)
   gem.add_development_dependency(%q<rspec>, [">= 2.14.1"])
