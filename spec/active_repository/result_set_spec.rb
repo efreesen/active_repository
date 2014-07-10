@@ -219,7 +219,165 @@ describe ActiveRepository::ResultSet, :result_set do
     end
   end
 
+  describe '#each' do
+    subject { ActiveRepository::ResultSet.new(Country) }
+
+    context 'when result_set is not empty' do
+      before do
+        Country.delete_all
+        Country.create(name: 'Canada', continent: 'America')
+        Country.create(name: 'Russia', continent: 'Europe')
+        Country.create(name: 'USA', continent: 'America')
+        Country.create(name: 'Brazil', continent: 'America')
+      end
+
+      it 'returns an array of objects' do
+        objects = subject.where(continent: 'America').each
+
+        expect(objects.class).to eq Enumerator
+      end
+
+      it 'returns a collection of Countries' do
+        objects = subject.where(continent: 'America').each
+
+        expect(objects.map(&:class).uniq).to eq [Country]
+      end
+
+      it 'executes given method on all objects' do
+        objects = subject.where('id is not null').each(&:delete)
+
+        expect(Country.count).to eq 0
+      end
+    end
+
+    context 'when result_set is empty' do
+      it 'returns nil' do
+        expect(subject.where(continent: 'America').each).not_to be_any
+      end
+    end
+  end
+
+  describe '#empty?' do
+    subject { ActiveRepository::ResultSet.new(Country) }
+
+    context 'when result_set is not empty' do
+      before do
+        Country.delete_all
+        Country.create(name: 'Canada', continent: 'America')
+        Country.create(name: 'Russia', continent: 'Europe')
+        Country.create(name: 'USA', continent: 'America')
+        Country.create(name: 'Brazil', continent: 'America')
+      end
+
+      it 'returns false' do
+        result = subject.where(continent: 'America').empty?
+
+        expect(result).not_to be
+      end
+    end
+
+    context 'when result_set is empty' do
+      it 'returns true' do
+        result = subject.where(continent: 'Americas').empty?
+
+        expect(result).to be
+      end
+    end
+  end
+
+  describe '#any?' do
+    subject { ActiveRepository::ResultSet.new(Country) }
+
+    context 'when result_set is not empty' do
+      before do
+        Country.delete_all
+        Country.create(name: 'Canada', continent: 'America')
+        Country.create(name: 'Russia', continent: 'Europe')
+        Country.create(name: 'USA', continent: 'America')
+        Country.create(name: 'Brazil', continent: 'America')
+      end
+
+      it 'returns true' do
+        result = subject.where(continent: 'America').any?
+
+        expect(result).to be
+      end
+    end
+
+    context 'when result_set is empty' do
+      it 'returns false' do
+        result = subject.where(continent: 'Americas').any?
+
+        expect(result).not_to be
+      end
+    end
+  end
+
+  describe '#map' do
+    subject { ActiveRepository::ResultSet.new(Country) }
+
+    context 'when result_set is not empty' do
+      before do
+        Country.delete_all
+        Country.create(name: 'Canada', continent: 'America')
+        Country.create(name: 'Russia', continent: 'Europe')
+        Country.create(name: 'USA', continent: 'America')
+        Country.create(name: 'Brazil', continent: 'America')
+      end
+
+      it 'returns an array with given attributes' do
+        result = subject.where(continent: 'America').map(&:name)
+
+        expect(result).to eq ["Canada", "USA", "Brazil"]
+      end
+    end
+
+    context 'when result_set is empty' do
+      it 'returns an empty array' do
+        result = subject.where(continent: 'Americas').map(&:name)
+
+        expect(result).to eq []
+      end
+    end
+  end
+
+  describe '#pluck' do
+    subject { ActiveRepository::ResultSet.new(Country) }
+
+    context 'when result_set is not empty' do
+      before do
+        Country.delete_all
+        Country.create(name: 'Canada', continent: 'America')
+        Country.create(name: 'Russia', continent: 'Europe')
+        Country.create(name: 'USA', continent: 'America')
+        Country.create(name: 'Brazil', continent: 'America')
+      end
+
+      it 'returns an array with given attributes' do
+        result = subject.where(continent: 'America').pluck(:name)
+
+        expect(result).to eq ["Canada", "USA", "Brazil"]
+      end
+    end
+
+    context 'when result_set is empty' do
+      it 'returns an empty array' do
+        result = subject.where(continent: 'Americas').pluck(:name)
+
+        expect(result).to eq []
+      end
+    end
+  end
+
   describe '#first' do
+    before do
+      Country.delete_all
+      Country.create(name: 'Canada', continent: 'America')
+      Country.create(name: 'Russia', continent: 'Europe')
+      Country.create(name: 'USA', continent: 'America')
+      Country.create(name: 'Brazil', continent: 'America')
+    end
+
     subject { ActiveRepository::ResultSet.new(Country) }
 
     context 'when result_set is not empty' do

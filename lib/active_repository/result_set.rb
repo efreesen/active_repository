@@ -1,3 +1,4 @@
+require 'pry'
 class ActiveRepository::ResultSet
 	def initialize(klass, query={}, attributes={})
     @klass = klass
@@ -11,6 +12,18 @@ class ActiveRepository::ResultSet
 
   def each(&block)
     all.each(&block)
+  end
+
+  def empty?
+    all.empty?
+  end
+
+  def any?
+    all.any?
+  end
+
+  def map(&block)
+    all.map(&block)
   end
 
   def pluck(attribute)
@@ -52,7 +65,7 @@ class ActiveRepository::ResultSet
   end
 
   def where(query)
-    @attributes = @attributes.merge(query) if query.is_a?(Hash)
+    @attributes = @attributes.merge(SqlQueryExecutor::Query::Normalizers::QueryNormalizer.attributes_from_query(query))
     query = join_query(query, 'and')
 
     ActiveRepository::ResultSet.new(@klass, query, @attributes)

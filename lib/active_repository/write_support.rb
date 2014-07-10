@@ -1,22 +1,6 @@
 require 'active_hash'
 require 'sql_query_executor'
 
-# Changes made in order to make write support in ActiveHash.
-
-begin
-  klass = Module.const_get(ActiveRecord::Rollback)
-  unless klass.is_a?(Class)
-    raise "Not defined"
-  end
-rescue
-  module ActiveRecord
-    class ActiveRecordError < StandardError
-    end
-    class Rollback < ActiveRecord::ActiveRecordError
-    end
-  end
-end
-
 module ActiveHash
   class Base
     def initialize(attributes = {})

@@ -4,7 +4,7 @@ module ActiveModel
       def initialize(options)
         super
         options.reverse_merge(:case_sensitive => true)
-        @klass = options[:class]
+        options[:class].send :attr_accessor, :custom_attribute
       end
 
       def validate_each(record, attribute, value)
