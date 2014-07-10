@@ -109,12 +109,12 @@ shared_examples ".exists?" do
     id = Country.last.id
 
     Country.delete_all
-    Country.exists?(id).should be_false
+    Country.exists?(id).should_not be
 
     country = Country.create(:name => "France")
     id = country.id
 
-    Country.exists?(id).should be_true
+    Country.exists?(id).should be
   end
 end
 
@@ -470,19 +470,19 @@ shared_examples "#eql?" do
   end
 
   it "should return true with the same class and id" do
-    Country.new(:id => 23).eql?(Country.new(:id => 23)).should be_true
+    Country.new(:id => 23).eql?(Country.new(:id => 23)).should be
   end
 
   it "should return false with the same class and different ids" do
-    Country.new(:id => 24).eql?(Country.new(:id => 23)).should be_false
+    Country.new(:id => 24).eql?(Country.new(:id => 23)).should_not be
   end
 
   it "should return false with the different classes and the same id" do
-    Country.new(:id => 23).eql?(Region.new(:id => 23)).should be_false
+    Country.new(:id => 23).eql?(Region.new(:id => 23)).should_not be
   end
 
   it "returns false when id is nil" do
-    Country.new.eql?(Country.new).should be_false
+    Country.new.eql?(Country.new).should_not be
   end
 end
 
@@ -533,7 +533,7 @@ shared_examples "#readonly?" do
 
     country.name = "Germany"
 
-    country.save.should be_true
+    country.save.should be
 
     Country.all.size.should == 5
     country.should be_valid
@@ -571,14 +571,14 @@ shared_examples "#save" do
 
   it "does not add object to the collection if it is not valid" do
     country = Country.new :monarch => "King", :language => "bar"
-    country.save.should be_false
+    country.save.should_not be
     Country.count.should == 0
   end
 
   it "adds the new object to the data collection" do
     Country.all.should be_empty
     country = Country.new :name => "foo", :monarch => "King", :language => "bar"
-    country.save.should be_true
+    country.save.should be
     country.reload
 
     countries_attributes =  Country.first.attributes
