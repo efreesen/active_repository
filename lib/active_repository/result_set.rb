@@ -1,4 +1,3 @@
-require 'pry'
 class ActiveRepository::ResultSet
 	def initialize(klass, query={}, attributes={})
     @klass = klass
