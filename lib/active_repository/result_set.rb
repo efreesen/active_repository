@@ -85,10 +85,10 @@ private
   def get_result(args)
     if @klass.repository?
       args = args.first if args.is_a?(Array) && args.size == 1
-      query_executor = SqlQueryExecutor::Base.new(@klass.all, args)
-      query_executor.execute!
+      query_executor = SqlQueryExecutor::Base.new(args)
+      query_executor.execute!(@klass.all)
     else
-      query = SqlQueryExecutor::Base.new([], args)
+      query = SqlQueryExecutor::Base.new(args)
       objects = PersistenceAdapter.where(@klass, query).map do |object|
         @klass.serialize!(object.attributes)
       end
