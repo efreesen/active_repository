@@ -770,3 +770,22 @@ shared_examples "uniqueness" do
     Country.all.should == [country1]
   end
 end
+
+shared_examples "uniqueness_with_scope" do
+  before do
+    Country.delete_all
+    Country.validates_uniqueness_of :language, scope: 'name'
+  end
+
+  it "does not accept duplicated ids" do
+    country1 = Country.create(name: 'USA',    language: 'English')
+    country2 = Country.create(name: 'Canada', language: 'English')
+    country3 = Country.create(name: 'USA',    language: 'English')
+
+    country1.should be_valid
+    country2.should be_valid
+    country3.should_not be_valid
+    Country.count.should == 2
+    Country.all.should == [country1, country2]
+  end
+end

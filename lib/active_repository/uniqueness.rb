@@ -8,7 +8,15 @@ module ActiveModel
       end
 
       def validate_each(record, attribute, value)
-        query = (record.id ? "id <> #{record.id}" : 'id is not null')
+        query  = (record.id ? "id <> #{record.id}" : 'id is not null')
+        
+        if(options[:scope])
+          value = record.send(options[:scope])
+          query += " and #{options[:scope]} = "
+          query += value.is_a?(String) ? "'#{value}'" : value
+        end
+
+
         duplicate = record.class.where(query).all.select do |object|
           object.id != record.id && object.send(attribute) == record.send(attribute)
         end

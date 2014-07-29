@@ -105,6 +105,7 @@ describe ActiveRepository, "Base" do
     it_behaves_like '.delete_all'
     it_behaves_like '#delete'
     it_behaves_like 'uniqueness'
+    it_behaves_like 'uniqueness_with_scope'
   end
 
   context "active_record", :active_record do
@@ -172,6 +173,7 @@ describe ActiveRepository, "Base" do
     it_behaves_like '.delete_all'
     it_behaves_like '#delete'
     it_behaves_like 'uniqueness'
+    it_behaves_like 'uniqueness_with_scope'
   end
 
   context "mongoid", :mongoid do
@@ -244,5 +246,6 @@ describe ActiveRepository, "Base" do
     it_behaves_like '.delete_all'
     it_behaves_like '#delete'
     it_behaves_like 'uniqueness'
+    it_behaves_like 'uniqueness_with_scope'
   end
 end
