@@ -12,8 +12,9 @@ module ActiveModel
         
         if(options[:scope])
           value = record.send(options[:scope])
+
           query += " and #{options[:scope]} = "
-          query += value.is_a?(String) ? "'#{value}'" : value
+          query += value.is_a?(String) ? "'#{value}'" : value.to_s
         end
 
 
