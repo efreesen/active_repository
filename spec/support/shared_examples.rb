@@ -21,7 +21,7 @@ shared_examples ".update_attribute" do
     Country.first.name.should == "Italy"
   end
 
-  it "updates records whit string keys" do
+  it "updates records with string keys" do
     id = Country.first.id
     country = Country.find(id)
     country.update_attribute('name', "Germany")
@@ -39,12 +39,32 @@ shared_examples ".update_attributes" do
     Country.first.name.should == "Italy"
   end
 
-  it "updates records whit string keys" do
+  it "updates records with string keys" do
     id = Country.first.id
     country = Country.find(id)
     country.update_attributes('name' => "Germany")
 
     Country.first.name.should == "Germany"
+  end
+end
+
+shared_examples ".update_all" do
+  it "updates records" do
+    country = Country.where(language: 'English')
+    country.update_all(name: "Italy")
+
+    italys = Country.where(name: 'Italy')
+
+    italys.count.should == 3
+  end
+
+  it "updates records with string keys" do
+    country = Country.where(language: 'English')
+    country.update_all('name' => "Germany")
+
+    germanys = Country.where(name: 'Germany')
+
+    germanys.count.should == 3
   end
 end
 

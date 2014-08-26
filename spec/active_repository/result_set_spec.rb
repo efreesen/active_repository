@@ -213,7 +213,7 @@ describe ActiveRepository::ResultSet, :result_set do
     end
 
     context 'when result_set is empty' do
-      it 'returns nil' do
+      it 'returns an empty array' do
         expect(subject.where('').all).to be_empty
       end
     end

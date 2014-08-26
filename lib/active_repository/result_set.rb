@@ -77,6 +77,17 @@ class ActiveRepository::ResultSet
     ActiveRepository::ResultSet.new(@klass, query, @attributes)
   end
 
+  def update_all(attrs)
+    if @klass.repository?
+      @klass.where(@query).each do |record|
+        record.update_attributes(attrs)
+      end
+    else
+      query = SqlQueryExecutor::Base.new(@query)
+      PersistenceAdapter.where(@klass, query).update_all(attrs)
+    end
+  end
+
 private
   def convert_query(query)
     @query = SqlQueryExecutor::Query::Normalizers::QueryNormalizer.clean_query(query)
