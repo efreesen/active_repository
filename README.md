@@ -1,4 +1,4 @@
-# ActiveRepository
+# ActiveRepository (Discontinued)
 
 [[![Coverage Status](https://coveralls.io/repos/efreesen/active_repository/badge.png)](https://coveralls.io/r/efreesen/active_repository)![Build Status](https://secure.travis-ci.org/efreesen/active_repository.png)](http://travis-ci.org/efreesen/active_repository)[![Dependency Status](https://gemnasium.com/efreesen/active_repository.png)](https://gemnasium.com/efreesen/active_repository) [![Code Climate](https://codeclimate.com/github/efreesen/active_repository.png)](https://codeclimate.com/github/efreesen/active_repository)
 
