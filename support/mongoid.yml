@@ -1,5 +1,5 @@
 development:
-  sessions:
+  clients:
     default:
       database: active_repository
       hosts:

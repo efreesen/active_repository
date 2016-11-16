@@ -29,8 +29,8 @@ Gem::Specification.new do |gem|
     "spec/spec_helper.rb"
   ]
 
-  gem.add_runtime_dependency(%q<active_hash>, [">= 1.2.3"])
-  gem.add_runtime_dependency(%q<activemodel>, [">= 3.2.0"])
+  gem.add_runtime_dependency(%q<active_hash>, [">= 1.4.0"])
+  gem.add_runtime_dependency(%q<activemodel>, [">= 4.1.4"])
   gem.add_runtime_dependency(%q<sql_query_executor>, ["~> 0.5.5"])
   gem.add_development_dependency(%q<pry>)
   gem.add_development_dependency(%q<rspec>, [">= 2.14.1"])

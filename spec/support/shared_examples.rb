@@ -380,7 +380,7 @@ shared_examples "#method_missing" do
   it "doesn't blow up if you call a missing dynamic finder when fields haven't been set" do
     proc do
       Country.find_by_size("Foo")
-    end.should raise_error(NoMethodError, "undefined method `find_by_size' for Country:Class")
+    end.should raise_error(NoMethodError, /undefined method `find_by_size' for Country:Class/)
   end
 end
 
