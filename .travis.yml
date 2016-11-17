@@ -1,12 +1,11 @@
 rvm:
-  - 2.1.0
-  - 2.0.0
-  - 1.9.3
-  - jruby-19mode
+  - 2.2.0
+  - 2.3.0
+  - jruby-head
 
 matrix:
   allow_failures:
-    - rvm: jruby-19mode
+    - rvm: jruby-head
 
 services:
   - mongodb
