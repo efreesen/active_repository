@@ -4,15 +4,15 @@ sudo: false
 rvm:
   - 2.2.2
   - 2.3.0
-  - jruby-9.1.5.0
-before_script:
-  - jdk_switcher use oraclejdk8
+#  - jruby-9.1.5.0
+#before_script:
+#  - jdk_switcher use oraclejdk8
 before_install:
   - gem install bundler
   - gem install bundler
 # jruby env doesn't have bundler by default
-matrix:
-  allow_failures:
-    - rvm: jruby-head
+# matrix:
+#   allow_failures:
+#    - rvm: jruby-head
 services:
   - mongodb
