@@ -9,7 +9,6 @@ rvm:
 #  - jdk_switcher use oraclejdk8
 before_install:
   - gem install bundler
-  - gem install bundler
 # jruby env doesn't have bundler by default
 # matrix:
 #   allow_failures:
