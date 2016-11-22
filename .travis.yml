@@ -1,12 +1,18 @@
+language: ruby
+cache: bundler
+sudo: false
 rvm:
-  - 2.1.0
-  - 2.0.0
-  - 1.9.3
-  - jruby-19mode
-
-matrix:
-  allow_failures:
-    - rvm: jruby-19mode
-
+  - 2.2.2
+  - 2.3.0
+#  - jruby-9.1.5.0
+#before_script:
+#  - jdk_switcher use oraclejdk8
+before_install:
+  - gem install bundler
+  - gem install bundler
+# jruby env doesn't have bundler by default
+# matrix:
+#   allow_failures:
+#    - rvm: jruby-head
 services:
   - mongodb
