@@ -10,6 +10,25 @@ describe ActiveRepository::Base, "associations" do
       connection.create_table(:countries, :force => true) {}
     end
 
+    class CountryRepository < ActiveRepository::Base
+      self.persistence_class = Country
+      self.save_in_memory = false
+    end
+
+    class Mountain < ActiveRecord::Base
+      establish_connection :adapter => "sqlite3", :database => ":memory:"
+      connection.create_table(:mountains, :force => true) do |t|
+        t.integer :country_id
+      end
+    end
+
+    class President < ActiveRecord::Base
+      establish_connection :adapter => "sqlite3", :database => ":memory:"
+      connection.create_table(:presidents, :force => true) do |t|
+        t.integer :country_id
+      end
+    end
+
     class School < ActiveRecord::Base
       establish_connection :adapter => "sqlite3", :database => ":memory:"
       connection.create_table(:schools, :force => true) do |t|
@@ -43,6 +62,9 @@ describe ActiveRepository::Base, "associations" do
     Object.send :remove_const, :City
     Object.send :remove_const, :Author
     Object.send :remove_const, :Country
+    Object.send :remove_const, :CountryRepository
+    Object.send :remove_const, :Mountain
+    Object.send :remove_const, :President
     Object.send :remove_const, :School
     Object.send :remove_const, :Book
   end
@@ -87,6 +109,22 @@ describe ActiveRepository::Base, "associations" do
         City.has_many :writers, :class_name => "Author"
         city = City.create :id => 1
         city.writers.all.should == [@included_author_1, @included_author_2]
+      end
+    end
+
+    context "with ActiveRecord children but different naming scheme requiring foreign_key option" do
+      it "honors foreign_key option to properly fetch child records from has_many" do
+        CountryRepository.has_many :mountains, :foreign_key => "country_id"
+        country = Country.create :id => 1
+        mountain_1 = Mountain.create :country_id => 1, :id => 1
+        expect(CountryRepository.first.mountains).to eq([mountain_1])
+      end
+
+      it "honors foreign_key option to properly fetch child record from has_one" do
+        CountryRepository.has_one :president, :foreign_key => "country_id"
+        country = Country.create :id => 1
+        president_1 = President.create :country_id => 1, :id => 1
+        expect(CountryRepository.first.president).to eq(president_1)
       end
     end
 
