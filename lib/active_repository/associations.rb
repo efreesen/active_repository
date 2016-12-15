@@ -15,10 +15,11 @@ module ActiveRepository
       def has_many(association_id, options = {})
         define_method(association_id) do
           options = {
-            class_name:  association_id.to_s.classify
+            class_name:  association_id.to_s.classify,
+            foreign_key: self.class.to_s.foreign_key
           }.merge(options)
 
-          foreign_key = self.class.to_s.foreign_key
+          foreign_key = options[:foreign_key]
           klass = options[:class_name].constantize
 
           klass.where(foreign_key => id)
@@ -28,7 +29,8 @@ module ActiveRepository
       # Defines "has one" type relation between ActiveRepository objects
       def has_one(association_id, options = {})
         options = {
-          class_name:  association_id.to_s.classify
+          class_name:  association_id.to_s.classify,
+          foreign_key: self.to_s.foreign_key
         }.merge(options)
 
         has_one_methods(association_id, options)
@@ -61,7 +63,7 @@ module ActiveRepository
 
       def define_has_one_method(association_id, options)
         define_method(association_id) do
-          foreign_key = self.class.to_s.foreign_key
+          foreign_key = options[:foreign_key]
           klass       = options[:class_name].constantize
 
           klass.where(foreign_key => self.id).first
