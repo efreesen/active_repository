@@ -55,11 +55,11 @@ To use it your class should inherit ActiveRepository::Base:
 
 ActiveRepository::Base has two class attributes to help it identify where it is going to persist data.
 
-###persistence_class
+### persistence_class
 
 This attribute is used to identify the class responsible for persisting data, it should be the ActiveRecord model or the Mongoid Document. Let's say your ActiveRecord Model is called User, using the example above, all database actions would be passed to User class, and you can extract all your business logic to the UserRepository class.
 
-###save_in_memory
+### save_in_memory
 
 This attribute is used to persist data directly into memory. When set to true, it ignores the persistence_class attribute and save in memory. If set to false it goes back to persistence_class. You can use it to keep your tests saving in memory, or set it to false manually if a test need to touch the database.
 
@@ -70,7 +70,7 @@ If using Rails you can even tie it to your environment, so in tests it is set to
       save_in_memory = Rails.env.test?
     end
 
-###postfix
+### postfix
 
 ActiveRepository also has an attribute to help you keep your code clean, the postfix. It can be used to define a pattern for Persistence classes so you don't need to keep declaring it everywhere. When using it, your persistence_class name would be \<repository_class_name\> + \<postfix\>.
 
@@ -96,7 +96,7 @@ And you can create your repositories inheriting from BaseRepository:
 
 Then you are good to go!!!
 
-###Setting fields
+### Setting fields
 
 After defining the persistence options, you can set the fields it is going to use:
 
