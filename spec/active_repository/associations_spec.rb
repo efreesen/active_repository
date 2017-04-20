@@ -255,6 +255,27 @@ describe ActiveRepository::Base, "associations" do
       end
     end
 
+    context "with class_name and foreign_key explicitly specified" do
+      before do
+        City.has_one :second_author, class_name: "Author", foreign_key: :main_city_id
+        Author.field :main_city_id
+      end
+
+      it "returns the correct child" do
+        city = City.create id: 1
+        author = Author.create main_city_id: 1
+        expect(city.second_author).to eq(author)
+      end
+
+      it "sets the child correctly" do
+        city = City.create
+        author = Author.create
+        city.second_author = author
+        expect(city.second_author).to eq(author)
+        expect(author.main_city_id).to eq(city.id)
+      end
+    end
+
     describe '#create_association' do
       before do
         City.has_one :author
@@ -271,7 +292,7 @@ describe ActiveRepository::Base, "associations" do
         city.author.should == author
       end
 
-      it "replaces existing relation" do
+      it "replaces existing relation using #create method" do
         city = City.create
         old_author = city.create_author(name: 'Clark Kent')
         author = city.create_author(name: 'Bruce Wayne')

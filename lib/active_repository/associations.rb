@@ -73,7 +73,7 @@ module ActiveRepository
       def define_has_one_setter(association_id, options)
         define_method("#{association_id}=") do |object|
           primary_key = self.send(self.class.primary_key)
-          foreign_key = self.class.to_s.foreign_key
+          foreign_key = options[:foreign_key]
           association = self.send(association_id)
 
           association.update_attribute(foreign_key, nil) if association
